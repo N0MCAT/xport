@@ -35,7 +35,7 @@ function Levels.encodeLevelFromFile(area, id, content)
     result = result or {} -- calm down zed...???
 
     if not success or not validateLevel(result) then
-        debugPrint("[LEVELS] Couldn't encode", area .. "/" .. id .. ", trying legacy format...")
+        -- debugPrint("[LEVELS] Couldn't encode", area .. "/" .. id .. ", trying legacy format...")
         result = Levels.convertLegacyData(area, id, content)
         if result == nil or not validateLevel(result) then
             debugPrint("[LEVELS] Failed to validate", area .. "/" .. id .. ", so we ignore it")
@@ -61,7 +61,7 @@ function Levels.convertLegacyData(area, id, content)
     local thingy = string.find(rawData[1], '\n') -- well-named variable
 
     if #rawData < 2 then
-        debugPrint("[LEVELS] Couldn't encode legacy", area .. "/" .. id .. ", so we ignore it")
+        -- debugPrint("[LEVELS] Couldn't encode legacy", area .. "/" .. id .. ", so we ignore it")
         return nil
     end
 
@@ -168,7 +168,7 @@ function Levels.convertLegacyData(area, id, content)
     end
 
     local jsonencode = JSONEncoder.encode(result, '  ', ICell, {
-        {"title", "subtitle", "palette", "musicID", "cells"}
+        { "title", "subtitle", "width", "height", "palette", "musicID", "cells" }
     })
     love.filesystem.write(id .. '.xjson', jsonencode)
 
@@ -180,7 +180,6 @@ function Levels.loadData()
     globals.levels = {}
     Levels.order = globals.levels
     local levelClears = Save.readFile('levelClears.xjson', {}) or {} -- the or isnt necessary but zed doesnt realize that
-    debugPrint(levelClears)
 
     for k, _ in pairs(Levels.order) do Levels.order[k] = nil end
     for k, _ in pairs(Levels.plain) do Levels.plain[k] = nil end

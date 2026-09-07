@@ -103,7 +103,7 @@ function invert(t1)
     for k, v in pairs(t1) do
         t2[v] = k
     end
-    debugPrint('[INVERT] FROM', t1, 'TO', t2)
+    -- debugPrint('[INVERT] FROM', t1, 'TO', t2)
     return t2
 end
 
