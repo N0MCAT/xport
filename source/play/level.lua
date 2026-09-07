@@ -53,6 +53,18 @@ function Level.isInBounds(level, x, y)
 end
 
 function Level.new(id, area, width, height, cells, palette, musicID, number, title, subtitle)
+    -- Sort the table for extra rendering scrutiny and consistency.
+    -- Maybe this shouldn't be necessary, buuut...
+    table.sort(cells, function(a, b)
+        if a.cell.index == b.cell.index then
+            if a.x == b.x then
+                return a.y < b.y
+            end
+            return a.x < b.x
+        end
+        return a.cell.index < b.cell.index
+    end)
+
     local result = {
         id = id,
         area = area,

@@ -4,16 +4,17 @@ local love = require "love"
 require "source.graphics.palette"
 require "source.data.locale"
 
-Cell = {
-    Wall =      {},
-    Player =    {},
-    Box =       {},
-    Timer =     {},
-    Origin =    {},
-    Goal =      {},
+Cell = orderedEnum({
+    "Wall",
+    "Player",
+    "Box",
 
-    Tree =      {},
-}; enumerate(Cell)
+    "Timer",
+    "Origin",
+    "Goal",
+
+    "Tree",
+})
 ICell = invert(Cell)
 
 function Cell.lineWidth(cellSize, strokeSize)
@@ -145,7 +146,6 @@ function Cell.draw(cell, level)
             scale
         )
     end
-    love.graphics.setCanvas()
 end
 
 function Cell.startMoveAnim(cell)

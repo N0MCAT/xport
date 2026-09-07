@@ -6,10 +6,12 @@ local love = require "love"
 function enum(name, a)
     a = a or {}
 
+    -- Compares against a string or enum.
     local is = function(self, id)
         return self.type == id or self == id
     end
 
+    -- Parameters of things to compare to.
     local isAny = function(self, ...)
         for _, id in ... do
             if is(self, id) then
@@ -19,6 +21,7 @@ function enum(name, a)
         return false
     end
 
+    -- A list of things to compare to.
     local isAnyOf = function(self, ids)
         if is(self, ids) then
             return true
@@ -56,10 +59,22 @@ function enum(name, a)
 end
 
 -- Converts a table of enums into actual enums.
+-- This is the function you should generally use when creating enums.
 function enumerate(table)
     for key, value in pairs(table) do
         table[key] = enum(key, value)
     end
+    return table
+end
+
+-- Alternate version of `enumerate()` which internally keeps the order.
+-- Useful for Cell as we need them to be sorted by type sometimes.
+function orderedEnum(table)
+    for i, value in ipairs(table) do
+        table[value] = enum(value)
+        table[value].index = i
+    end
+    return table
 end
 
 -- Binds a prototype table to another table, acting as a fallback for indexing
