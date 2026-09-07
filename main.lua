@@ -13,7 +13,6 @@ require "source.graphics.palette"
 
 require "source.ui.interface"
 require "source.ui.element"
-require "source.ui.button"
 
 --[[
 
@@ -194,7 +193,7 @@ function love.update(dt)
     end
     updateGraphics()
 
-    -- Element.test()
+    Element.test()
 
     local currentKey = KEYS_PRESSED[#KEYS_PRESSED]
     if currentKey ~= nil then
@@ -212,7 +211,7 @@ function love.update(dt)
     if state.mode == Mode.Gameplay then
         Level.update(state.level, dt)
     elseif state.mode == Mode.Menu then
-        Menu.update(state.menu, dt)
+        -- Menu.update(state.menu, dt)
     elseif state.mode == Mode.Editor then
         Interface.update(state.interface, dt)
     end
@@ -235,7 +234,7 @@ function love.draw()
     end
     Animation.draw()
 
-    -- Element.draw(state.rootElement)
+    Element.draw(state.rootElement)
 
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, state.height - 25, 0, 0.5)
 end

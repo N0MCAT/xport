@@ -91,20 +91,23 @@ function Element.test()
             },
             data = state,
             key = "musicVolume",
-            minValue = 0,
-            maxValue = 1,
-            id = "slider1"
+            id = "musicSlider",
+            connect = function(value)
+                Sounds.move:play(true)
+            end
         })
         Element.slider(ctx, {
             sizing = {
                 width = Size.Fixed { amount = state.width * 0.5 },
                 height = Size.Fixed { amount = state.height * 0.1 },
             },
-            data = state,
-            key = "musicVolume",
-            minValue = 0,
-            maxValue = 1,
-            id = "slider2"
+            snapping = #Locale.languages,
+            id = "localeSlider",
+            connect = function(value)
+                local newLang = Locale.languages[value + 1]
+                Locale.changeLanguage(newLang)
+                return value
+            end
         })
     end)
     Element.initialize(state.rootElement)
@@ -140,15 +143,35 @@ function Element.get(element, key)
     end
 end
 
+function Element.set(element, key, value)
+    if element.id then
+        local savedElement = element.ctx.ids[element.id]
+        if savedElement then
+            savedElement[key] = value
+        end
+    end
+end
+
 function Element.slider(ctx, config)
     config.minValue = config.minValue or 0
-    config.maxValue = config.maxValue or 100
+    config.maxValue = config.maxValue or ((config.snapping or 2) - 1)
+    config.id = config.id or config.key
+    config.key = config.key or "value"
 
     config.color = config.color or { 43, 39, 81, 255 }
     config.headColor = config.headColor or { 255, 255, 255, 255 }
     config.headHoverColor = config.headHoverColor or { 255, 193, 247, 255 }
 
     Element.new(ctx, config, function(ctx)
+        -- For sliders that don't directly modify external data,
+        -- it can be omitted so that the parent itself handles the data.
+        if config.data == nil then
+            ctx.parent.sliderData = ctx.parent:get("sliderData") or {}
+            config.data = ctx.parent.sliderData
+        end
+
+        config.data[config.key] = config.data[config.key] or config.minValue
+
         local pWidth, pHeight = ctx.parent:get("width"), ctx.parent:get("height")
         local head = Element.new(ctx, {
             sizing = {
@@ -162,12 +185,38 @@ function Element.slider(ctx, config)
 
         if pWidth then
             local headSize = pHeight
-            if ctx.parent:isPressed() then
-                local value = clamp(config.minValue,
-                    ((Mouse.x - ctx.parent:get("x")) / (pWidth - headSize)) * (config.maxValue - config.minValue) +
-                    config.minValue, config.maxValue)
+
+            if head:isJustClicked() then
+                ctx.parent:set("sliderOffset", Mouse.x - head:get("x"))
+                ctx.parent:set("dragging", true)
+            elseif ctx.parent:isJustClicked() then
+                ctx.parent:set("sliderOffset", headSize * 0.5)
+                ctx.parent:set("dragging", true)
+            end
+
+            if Mouse.isDown[1] and ctx.parent:get("dragging") then
+                local sliderOffset = ctx.parent:get("sliderOffset")
+                ctx.parent.sliderOffset = sliderOffset
+                ctx.parent.dragging = true
+
+                local value = ((Mouse.x - ctx.parent:get("x") - sliderOffset) / (pWidth - headSize))
+
+                if config.snapping then
+                    value = math.floor(value * (config.snapping - 1) + 0.5)
+                    if config.snapping == (config.maxValue - config.minValue) then
+                        value = value + config.minValue
+                    else
+                        value = value / (config.snapping - 1) * (config.maxValue - config.minValue) + config.minValue
+                    end
+                else
+                    value = value * (config.maxValue - config.minValue) + config.minValue
+                end
+
+                value = clamp(config.minValue, value, config.maxValue)
+
+                local oldValue = config.data[config.key]
                 config.data[config.key] = value
-                if config.connect then config.connect(value) end
+                if oldValue ~= value and config.connect then config.connect(value) end
             end
             head.position.x = (config.data[config.key] - config.minValue) / (config.maxValue - config.minValue) * (pWidth - headSize)
             print(config.data[config.key])
