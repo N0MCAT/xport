@@ -4,22 +4,17 @@ local love = require "love"
 require "source.graphics.palette"
 require "source.data.locale"
 
-local function makeType(drawLayer)
-    return {
-        layer = drawLayer
-    }
-end
-
 Cell = {
-    Wall =      makeType(1),
-    Player =    makeType(1),
-    Box =       makeType(1),
-    Timer =     makeType(3),
-    Origin =    makeType(2),
-    Goal =      makeType(4),
+    Wall =      {},
+    Player =    {},
+    Box =       {},
+    Timer =     {},
+    Origin =    {},
+    Goal =      {},
 
-    Tree =      makeType(5),
-}
+    Tree =      {},
+}; enumerate(Cell)
+ICell = invert(Cell)
 
 function Cell.lineWidth(cellSize, strokeSize)
     return cellSize * strokeSize / 60
@@ -185,15 +180,28 @@ function Cell.new(x, y, id, type, region, timer)
     return result
 end
 
-function Cell.fromChar(x, y, id, character)
+-- Used in save/migration functions.
+function Cell.makeData(x, y, type, region, timer)
+    local result = {
+        x = x,
+        y = y,
+
+        type = ICell[type],
+        region = region,
+        val = timer
+    }
+    return result
+end
+
+function Cell.fromLegacyChar(x, y, character)
     if character == "#" then
-        return Cell.new(x, y, id, Cell.Wall)
+        return Cell.makeData(x, y, Cell.Wall)
     elseif string.match(character, "[ABCDEF]") then
-        return Cell.new(x, y, id, Cell.Box, character)
+        return Cell.makeData(x, y, Cell.Box, character)
     elseif character == "P" then
-        return Cell.new(x, y, id, Cell.Player, character)
+        return Cell.makeData(x, y, Cell.Player)
     elseif character == "T" then
-        return Cell.new(x, y, id, Cell.Tree, character)
+        return Cell.makeData(x, y, Cell.Tree)
     end
 end
 

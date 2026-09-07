@@ -230,10 +230,6 @@ function Menu.onResize(menu)
     end
 end
 
-local function pointInRect(x, y, rx, ry, rw, rh)
-    return x >= rx and y >= ry and x <= rx + rw and y <= ry + rh
-end
-
 local function hover(menu)
     local cursor = love.mouse.getCursor()
     if cursor == nil or cursor:getType() ~= "hand" and not menu.levelOpening then

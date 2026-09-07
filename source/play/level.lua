@@ -39,9 +39,12 @@ local function findCells(cells, x, y)
     end)
 end
 
-local function movableWithRegion(cells, region)
+local function movableWithRegion(cells, types, region)
     return allWithPredicate(cells, function(cell)
-        return cell.region == region and cell.cell ~= Cell.Origin
+        local typeCheck, regionCheck = cell.cell ~= Cell.Origin, true
+        if types then typeCheck = cell.cell:isAnyOf(types) end
+        if region then regionCheck = cell.region == region end
+        return typeCheck and regionCheck
     end)
 end
 
@@ -72,10 +75,6 @@ function Level.new(id, area, width, height, cells, palette, musicID, number, tit
         subtitle = Locale.localizeText(subtitle),
     }
 
-    table.sort(result.cells, function(a, b)
-        return a.cell.layer < b.cell.layer
-    end)
-
     return result
 end
 
@@ -84,69 +83,13 @@ function Level.fromSingleGrid(grid, cells)
 end
 
 function Level.fromData(levelData)
-    local layer1, layer2, layer3 = table.unpack(levelData.grid)
     local cells = {}
-
-    local y = 0
-    local x = 0
-    for line in string.gmatch(layer1, "[^\n]+") do
-        local trimmedLine = string.gsub(line, "%s+", "")
-        if trimmedLine == "" then
-            break
-        end
-        x = 0
-        for character in string.gmatch(trimmedLine, ".") do
-            if character ~= "." then
-                table.insert(cells, Cell.fromChar(x, y, #cells + 1, character))
-            end
-            x = x + 1
-        end
-        y = y + 1
+    for i, cell in ipairs(levelData.cells) do
+        cells[i] = Cell.new(cell.x, cell.y, i, Cell[cell.type], cell.region, cell.val)
     end
 
-    y = 0
-    for line in string.gmatch(layer2, "[^\n]+") do
-        local trimmedLine = string.gsub(line, "%s+", "")
-        if trimmedLine == "" then
-            break
-        end
-        x = 0
-        for character in string.gmatch(trimmedLine, ".") do
-            if string.match(character, "[#.]") then
-            elseif string.match(character, "%d") then
-                local r
-                for _, cell in ipairs(findCells(cells, x, y)) do
-                    if cell.region ~= nil then
-                        r = cell.region
-                    end
-                end
-                table.insert(cells, Cell.new(x, y, #cells + 1, Cell.Origin, r))
-                table.insert(cells, Cell.new(x, y, #cells + 1, Cell.Timer, r, tonumber(character)))
-            end
-            x = x + 1
-        end
-        y = y + 1
-    end
-
-    y = 0
-    for line in string.gmatch(layer3, "[^\n]+") do
-        local trimmedLine = string.gsub(line, "%s+", "")
-        if trimmedLine == "" then
-            break
-        end
-        x = 0
-        for character in string.gmatch(trimmedLine, ".") do
-            if string.match(character, "[#.]") then
-            elseif string.match(character, "G") then
-                table.insert(cells, Cell.new(x, y, #cells + 1, Cell.Goal))
-            end
-            x = x + 1
-        end
-        y = y + 1
-    end
-
-    -- sort of finished
-    return Level.new(levelData.id, levelData.area, x, y, cells, levelData.palette, levelData.musicID, levelData.number, levelData.title, levelData.subtitle)
+    return Level.new(levelData.id, levelData.area, levelData.width, levelData.height, cells,
+        levelData.palette, levelData.musicID, levelData.number, levelData.title, levelData.subtitle)
 end
 
 function Level.onResize(level)
@@ -256,8 +199,8 @@ local function applyDirection(level, cell, direction)
     end
 end
 
-local function moveCells(level, agentRegion, direction)
-    local pending = movableWithRegion(level.cells, agentRegion)
+local function moveCells(level, agentTypes, agentRegion, direction)
+    local pending = movableWithRegion(level.cells, agentTypes, agentRegion)
     local addedregions = { agentRegion }
     local events = {}
     local timers = {}
@@ -281,7 +224,7 @@ local function moveCells(level, agentRegion, direction)
                 return {} -- something moved into a wall, abort
             elseif ncell.cell == Cell.Box or ncell.cell == Cell.Timer then
                 if not elem(addedregions, ncell.region) then
-                    append(pending, movableWithRegion(level.cells, ncell.region))
+                    append(pending, movableWithRegion(level.cells, nil, ncell.region))
                     table.insert(addedregions, ncell.region)
                 end
             end
@@ -559,7 +502,7 @@ function Level.turn(level, key)
         return
     end
 
-    local events = moveCells(level, 'P', direction)
+    local events = moveCells(level, Cell.Player, nil, direction)
     if #events > 0 then
         Sounds.move:play()
     else

@@ -282,7 +282,7 @@ function JSONParser.parseObject(parser)
     return true, dict
 end
 
-function JSONEncoder.new(tab, sort --[[, objectByDefault]])
+function JSONEncoder.new(tab, replacement, sort --[[, objectByDefault]])
     if tab == nil then tab = '\t' end
     local comma, newline, space = ',\n', '\n', ' '
 
@@ -296,8 +296,12 @@ function JSONEncoder.new(tab, sort --[[, objectByDefault]])
     end
 
     local keySort = {}
-    for i, v in ipairs(sort or {}) do
-        keySort[v] = i
+    for i, sortTable in ipairs(sort or {}) do
+        local subsort = {}
+        for i, v in ipairs(sortTable or {}) do
+            subsort[v] = i
+        end
+        keySort[i] = subsort
     end
 
     return {
@@ -305,46 +309,72 @@ function JSONEncoder.new(tab, sort --[[, objectByDefault]])
         comma = comma,
         space = space,
         newline = newline,
-        keySort = keySort,
-        curTab = 1
+        replacement = replacement or {},
+        sort = keySort,
+        depth = 1
     }
 end
 
-function JSONEncoder.encode(obj, tab, sort)
-    local encoder = JSONEncoder.new(tab, sort)
+function JSONEncoder.encode(obj, tab, replacement, sort)
+    local encoder = JSONEncoder.new(tab, replacement, sort)
     local json = JSONEncoder.encodeValues(encoder, obj)
     return json
 end
 
 -- borrowed from https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
 function JSONEncoder.encodeValues(encoder, obj)
-    if type(obj) == 'table' then
-        local stringified = {}
+    if obj == nil then
+        return 'null'
+    elseif encoder.replacement[obj] ~= nil then
+        return JSONEncoder.encodeValues(encoder, encoder.replacement[obj])
+    elseif type(obj) == 'table' then
+        local stringifiedObj = {}
+        local stringifiedArr = {}
 
-        local tab = string.rep(encoder.tab, encoder.curTab)
-        local tabLower = string.rep(encoder.tab, encoder.curTab - 1)
-        encoder.curTab = encoder.curTab + 1
+        local tab = string.rep(encoder.tab, encoder.depth)
+        local tabLower = string.rep(encoder.tab, encoder.depth - 1)
+        encoder.depth = encoder.depth + 1
 
         local isObj = false
         local elements = 0
         for key, value in pairs(obj) do
-            if type(key) == "string" then
+            if type(key) ~= "number" then
                 isObj = true
             end
 
             elements = elements + 1 -- doesn't need to be set in array case but oh well
-            stringified[key] = JSONEncoder.encodeValues(encoder, value)
+
+            local encoded = JSONEncoder.encodeValues(encoder, value)
+            stringifiedArr[key] = encoded
+            table.insert(stringifiedObj,
+                {
+                    key = key,
+                    value = encoded
+                }
+            )
             -- debugPrint('[JSON] encoding', key .. ':', stringified[key])
         end
 
-        encoder.curTab = encoder.curTab - 1
+        encoder.depth = encoder.depth - 1
         if isObj then
             local s = '{' .. encoder.newline .. tab
+            local sortTable = encoder.sort[encoder.depth] or {}
+            table.sort(stringifiedObj, function(a1, b1)
+                local a2, b2 = a1.key, b1.key
+                if sortTable[a2] and sortTable[b2] then
+                    return sortTable[a2] < sortTable[b2]
+                elseif sortTable[a2] then
+                    return false  -- a < b
+                elseif sortTable[b2] then
+                    return true -- a > b
+                end
+                return a2 > b2
+            end)
 
             local i = 0;
-            for key, value in pairs(stringified) do
+            for _, v in ipairs(stringifiedObj) do
                 i = i + 1
-                s = s .. JSONEncoder.encodeValues(encoder, key) .. ":" .. encoder.space .. value
+                s = s .. JSONEncoder.encodeValues(encoder, v.key) .. ":" .. encoder.space .. v.value
 
                 if i ~= elements then
                     s = s .. encoder.comma .. tab
@@ -353,7 +383,7 @@ function JSONEncoder.encodeValues(encoder, obj)
 
             return s .. encoder.newline .. tabLower .. '}'
         else
-            return '[' .. encoder.newline .. tab .. table.concat(stringified, encoder.comma .. tab) .. encoder.newline .. tabLower .. ']'
+            return '[' .. encoder.newline .. tab .. table.concat(stringifiedArr, encoder.comma .. tab) .. encoder.newline .. tabLower .. ']'
         end
     elseif type(obj) == 'string' then
         local s = obj
@@ -361,8 +391,6 @@ function JSONEncoder.encodeValues(encoder, obj)
             s = string.gsub(s, real, "\\" .. raw)
         end
         return '"' .. s .. '"'
-    elseif obj == nil then
-        return 'null'
     else
         return tostring(obj)
     end

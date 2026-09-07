@@ -2,6 +2,66 @@ local love = require "love"
 
 -- CLASS-RELATED FUNCTIONS
 
+-- Creates an enum.
+function enum(name, a)
+    a = a or {}
+
+    local is = function(self, id)
+        return self.type == id or self == id
+    end
+
+    local isAny = function(self, ...)
+        for _, id in ... do
+            if is(self, id) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local isAnyOf = function(self, ids)
+        if is(self, ids) then
+            return true
+        end
+
+        for _, id in ipairs(ids) do
+            if is(self, id) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local empty = true
+    for _, _ in pairs(a) do
+        empty = false
+        break
+    end
+
+    if empty then
+        local result = { type = name }
+        result.is = is
+        result.isAny = isAny
+        result.isAnyOf = isAnyOf
+        return result
+    else
+        return function(config)
+            local result = { type = name }
+            for key, value in pairs(a) do result[key] = value end
+            for key, value in pairs(config) do result[key] = value end
+            result.is = is
+            return result
+        end
+    end
+end
+
+-- Converts a table of enums into actual enums.
+function enumerate(table)
+    for key, value in pairs(table) do
+        table[key] = enum(key, value)
+    end
+end
+
 -- Binds a prototype table to another table, acting as a fallback for indexing
 function bindPrototype(object, prototype)
     local mt = {}
@@ -13,6 +73,10 @@ function bindPrototype(object, prototype)
 end
 
 -- BASIC UTIL FUNCTIONS
+
+function pointInRect(x, y, rx, ry, rw, rh)
+    return x >= rx and y >= ry and x <= rx + rw and y <= ry + rh
+end
 
 function elem(t, item)
     for _, i in ipairs(t) do
@@ -37,8 +101,9 @@ end
 function invert(t1)
     local t2 = {}
     for k, v in pairs(t1) do
-        t1[v] = k
+        t2[v] = k
     end
+    debugPrint('[INVERT] FROM', t1, 'TO', t2)
     return t2
 end
 
@@ -124,13 +189,6 @@ function string.split(str, sep)
         table.insert(result, match)
     end
     return result
-end
-
--- SPECIAL ENUM FUNCTIONS
-Enum = {}
-
-function Enum.withID(enumID)
-    return { id=enumID }
 end
 
 -- GRAPHICS

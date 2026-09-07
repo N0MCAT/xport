@@ -1,16 +1,19 @@
 local love = require "love"
+require "source.utils"
+
 require "source.data.levels"
 require "source.data.locale"
 require "source.data.json"
 
-require "source.utils"
 require "source.graphics.anim"
 require "source.play.level"
 
 require "source.scenes.menu"
+require "source.graphics.palette"
+
 require "source.ui.interface"
 require "source.ui.element"
-require "source.graphics.palette"
+require "source.ui.button"
 
 --[[
 
@@ -23,6 +26,12 @@ TODO:
 
 DEBUG = {
     AnimationTime = 0.16 -- default: 0.16
+}
+
+Mouse = {
+    x = 0, y = 0,
+    justDown = {false, false},
+    isDown = {false, false}
 }
 
 Mode = {
@@ -120,8 +129,6 @@ function love.load()
     state.musicVolume = 0.5
     state.fullscreen = false
 
-    updateGraphics()
-
     local iconImageData = {}
     local iconAnimCount = 12
     -- local iconAnims = {}
@@ -178,7 +185,7 @@ function love.load()
     --     },
     --     align = { y = AlignY.Center }
     -- }, function(_)
-    --     Element.new(ctx, {
+    --     Button.new(ctx, {
     --         color = { 50, 70, 70, 200 },
     --         sizing = { width = Size.Grow, height = Size.Grow },
     --         spacing = 10,
@@ -194,22 +201,30 @@ function love.load()
     --     end)
     --     Element.new(ctx, {
     --         color = { 50, 70, 70, 200 },
-    --         sizing = { width = Size.Fixed { amount = love.graphics.getWidth() / 5 }, height = Size.Fixed { amount = love.graphics.getWidth() / 5 } }
+    --         sizing = { width = Size.Percent { amount = 0.2 }, height = Size.Percent { amount = love.graphics.getWidth() / 5 } }
     --     })
     -- end)
 
     -- Element.initialize(state.rootElement)
+
+    updateGraphics()
 end
 
 KEYS_PRESSED = {}
 REPEAT_START = 0.5
 REPEAT_INTERVAL = 0.05
+JUST_CLICKED = false
 
 local pressTime = 0
 local repeatTime = 0
 
 function love.update(dt)
     Animation.update(dt)
+    Mouse.x, Mouse.y = love.mouse.getPosition()
+    for i, _ in ipairs(Mouse.justDown) do
+        Mouse.isDown[i] = love.mouse.isDown(i)
+    end
+
     updateGraphics()
 
     local currentKey = KEYS_PRESSED[#KEYS_PRESSED]
@@ -233,8 +248,10 @@ function love.update(dt)
         Interface.update(state.interface, dt)
     end
 
+    for i, _ in ipairs(Mouse.justDown) do
+        Mouse.justDown[i] = false
+    end
     Music.update(dt)
-
 end
 
 function love.draw()
@@ -249,6 +266,8 @@ function love.draw()
     end
     Animation.draw()
     -- Element.draw(state.rootElement)
+
+    love.graphics.print("Current FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, 10)
 end
 
 function love.keypressed(key)
@@ -295,4 +314,8 @@ function love.mousemoved(x, y, dx, dy, istouch)
     if state.mode == Mode.Editor then
         Interface.mousemoved(state.interface, x, y, dx, dy, istouch)
     end
+end
+
+function love.mousepressed(x, y, button, istouch, presses)
+    Mouse.justDown[button] = true
 end

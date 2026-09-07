@@ -3,56 +3,28 @@ if Element ~= nil then return Element end
 local love = require "love"
 Element = {}
 
-local function enum(name, a)
-    a = a or {}
-
-    local is = function(self, id)
-        return self.type == id
-    end
-
-    local empty = true
-    for _, _ in pairs(a) do
-        empty = false
-        break
-    end
-
-    if empty then
-        local result = { type = name }
-        result.is = is
-        return result
-    else
-        return function(config)
-            local result = { type = name }
-            for key, value in pairs(a)      do result[key] = value end
-            for key, value in pairs(config) do result[key] = value end
-            result.is = is
-            return result
-        end
-    end
-end
-
 Size = {
-    Fit = enum("Fit"),
-    Fixed = enum("Fixed", { amount = 0 }),
-    Grow = enum("Grow"),
-}
+    Fit = {},
+    Fixed = { amount = 0 },
+    Grow = {},
+}; enumerate(Size)
 
 AlignX = {
-    Left = enum("Left"),
-    Center = enum("Center"),
-    Right = enum("Right"),
-}
+    Left = {},
+    Center = {},
+    Right = {},
+}; enumerate(AlignX)
 
 AlignY = {
-    Top = enum("Top"),
-    Center = enum("Center"),
-    Bottom = enum("Bottom"),
-}
+    Top = {},
+    Center = {},
+    Bottom = {},
+}; enumerate(AlignY)
 
 LayoutDir = {
-    LeftToRight = enum("LeftToRight"),
-    TopToBottom = enum("TopToBottom"),
-}
+    LeftToRight = {},
+    TopToBottom = {},
+}; enumerate(LayoutDir)
 
 local function validateElement(element)
     element.sizing = element.sizing or {}
@@ -271,7 +243,6 @@ function Element.calculateGrowSizes(element)
 end
 
 function Element.calculatePositions(element)
-
     element.x = element.x + element.position.x
     element.y = element.y + element.position.y
 
@@ -357,8 +328,18 @@ function Element.draw(element)
     end
 end
 
+-- function Element.startAction(element)
+--     if element.action then element.action() end
+--     for _, child in ipairs(element.children) do
+--         Element.startAction(child)
+--     end
+-- end
+
 function Element.initialize(element)
     Element.calculateFitSizes(element)
     Element.calculateGrowSizes(element)
     Element.calculatePositions(element)
+    -- Element.startAction(element)
 end
+
+return Element
