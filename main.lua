@@ -8,7 +8,8 @@ require "source.graphics.anim"
 require "source.play.level"
 
 require "source.scenes.menu"
-require "source.editor.interface"
+require "source.ui.interface"
+require "source.ui.element"
 require "source.graphics.palette"
 
 --[[
@@ -144,6 +145,60 @@ function love.load()
 
     Music.play(Music.menu)
     state.interface = Interface.new()
+
+    -- state.rootElement = Element.new(ctx, {
+    --     color = { 255, 0, 0 },
+    --     padding = { 25, 25, 25, 25 },
+    --     spacing = 25
+    -- }, function(_)
+    --     Element.new(ctx, {
+    --         sizing = {
+    --             width = Size.Fixed { amount = love.graphics.getWidth() / 4 },
+    --             height = Size.Fixed { amount = love.graphics.getHeight() / 4 },
+    --         },
+    --         color = { 0, 255, 0 }
+    --     })
+    --     Element.new(ctx, {
+    --         sizing = {
+    --             width = Size.Fixed { amount = love.graphics.getWidth() / 7 },
+    --             height = Size.Fixed { amount = love.graphics.getHeight() / 7 },
+    --         },
+    --         color = { 0, 255, 0 }
+    --     })
+    -- end)
+
+    -- local ctx = {}
+    -- state.rootElement = Element.new(ctx, {
+    --     color = { 32, 32, 50, 200 },
+    --     padding = { 10, 10, 10, 10 },
+    --     spacing = 10,
+    --     sizing = {
+    --         width = Size.Fixed { amount = love.graphics.getWidth() - 20 },
+    --         height = Size.Fixed { amount = love.graphics.getHeight() - 20 }
+    --     },
+    --     align = { y = AlignY.Center }
+    -- }, function(_)
+    --     Element.new(ctx, {
+    --         color = { 50, 70, 70, 200 },
+    --         sizing = { width = Size.Grow, height = Size.Grow },
+    --         spacing = 10,
+    --         padding = { 10, 10, 10, 10 },
+    --         layoutDir = LayoutDir.TopToBottom
+    --     }, function(_)
+    --         for i=1,10 do
+    --             Element.new(ctx, {
+    --                 color = { i * 50, 70, 70, 200 },
+    --                 sizing = { width = Size.Grow, height = Size.Grow }
+    --             })
+    --         end
+    --     end)
+    --     Element.new(ctx, {
+    --         color = { 50, 70, 70, 200 },
+    --         sizing = { width = Size.Fixed { amount = love.graphics.getWidth() / 5 }, height = Size.Fixed { amount = love.graphics.getWidth() / 5 } }
+    --     })
+    -- end)
+
+    -- Element.initialize(state.rootElement)
 end
 
 KEYS_PRESSED = {}
@@ -193,6 +248,7 @@ function love.draw()
         Interface.draw(state.interface)
     end
     Animation.draw()
+    -- Element.draw(state.rootElement)
 end
 
 function love.keypressed(key)

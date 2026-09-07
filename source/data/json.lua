@@ -1,6 +1,6 @@
 if JSONParser ~= nil then return JSONParser end
 local utf8 = require "utf8"
-
+local love = require "love"
 JSONParser, JSONEncoder = {}, {}
 
 local ESCAPES = {
@@ -285,9 +285,14 @@ end
 function JSONEncoder.new(tab, sort --[[, objectByDefault]])
     if tab == nil then tab = '\t' end
     local comma, newline, space = ',\n', '\n', ' '
+
     if not tab then
         comma = ','
         space = ''
+        newline = ''
+    elseif love.system.getOS() == "Windows" then
+        comma = ',\r\n'
+        newline = '\r\n'
     end
 
     local keySort = {}
