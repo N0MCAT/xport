@@ -55,6 +55,7 @@ function Levels.encodeLevelFromFile(area, id, content)
 end
 
 function Levels.convertLegacyData(area, id, content)
+    if type(content) ~= "string" then return nil end
     content = string.gsub(content, "\r\n", "\n")
     local rawData = string.split(content, '\n\n')
     local thingy = string.find(rawData[1], '\n') -- well-named variable
@@ -193,7 +194,7 @@ function Levels.loadData()
         -- debugPrint('[LEVELS] Parsing lobby "' .. areakey .. '/lobby",', levelClears[areakey .. '/lobby'])
         Levels.clears[areakey .. '/lobby'] = levelClears[areakey .. '/lobby'] or false
         Levels.areas[areakey] = {
-            lobby = Levels.encodeLevelFromFile(areakey, 'lobby', love.filesystem.read(areadir .. '/lobby.xlvl')),
+            lobby = Levels.encodeLevelFromFile(areakey, 'lobby', love.filesystem.read(areadir .. '/lobby.xjson') or love.filesystem.read(areadir .. '/lobby.xlvl')),
             levels = {}
         }
 
@@ -217,7 +218,7 @@ function Levels.loadData()
         end)
 
         for _, levelfile in ipairs(levelfiles) do
-            local levelID = string.gsub(levelfile, ".xlvl", "")
+            local levelID = string.gsub(string.gsub(levelfile, ".xjson", ""), ".xlvl", "")
             local fileContents = love.filesystem.read(areadir .. '/levels/' .. levelfile)
 
             -- debugPrint('[LEVELS] Parsing level "'.. areakey .. '/' .. levelID .. '",', levelClears[areakey .. '/' .. levelID])

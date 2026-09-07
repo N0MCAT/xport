@@ -1,0 +1,176 @@
+{
+  "width": 9,
+  "height": 5,
+  "title": "1 - demoworld.level1.title",
+  "subtitle": "demoworld.level1.description",
+  "palette": "demoworld/a_colors",
+  "musicID": "mus_level1",
+  "cells": [
+    {
+      "y": 0,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 3,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 4,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 1,
+      "type": "Player"
+    },
+    {
+      "y": 1,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 4,
+      "type": "Box",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 3,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 4,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 7,
+      "type": "Goal"
+    }
+  ]
+}

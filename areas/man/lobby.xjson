@@ -1,0 +1,279 @@
+{
+  "width": 9,
+  "height": 10,
+  "title": "",
+  "subtitle": "There is a man here.",
+  "palette": "man/secret",
+  "musicID": "mus_secret",
+  "cells": [
+    {
+      "y": 0,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 3,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 4,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 3,
+      "type": "Box",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 4,
+      "type": "Tree"
+    },
+    {
+      "y": 3,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 7,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 7,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 7,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 7,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 7,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 7,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 8,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 8,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 8,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 8,
+      "x": 4,
+      "type": "Player"
+    },
+    {
+      "y": 8,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 8,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 8,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 9,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 9,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 9,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 9,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 9,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 9,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 3,
+      "type": "Origin",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 3,
+      "val": 0,
+      "type": "Timer",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 5,
+      "type": "Goal"
+    }
+  ]
+}

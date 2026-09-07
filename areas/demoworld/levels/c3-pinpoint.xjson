@@ -1,0 +1,289 @@
+{
+  "width": 11,
+  "height": 7,
+  "title": "C3 - demoworld.levelC3.title",
+  "subtitle": "",
+  "palette": "demoworld/challenge",
+  "musicID": "mus_challenge2",
+  "cells": [
+    {
+      "y": 0,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 3,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 4,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 9,
+      "type": "Wall"
+    },
+    {
+      "y": 0,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 9,
+      "type": "Wall"
+    },
+    {
+      "y": 1,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 3,
+      "type": "Box",
+      "region": "C"
+    },
+    {
+      "y": 2,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 9,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 3,
+      "type": "Player"
+    },
+    {
+      "y": 3,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 3,
+      "x": 7,
+      "type": "Box",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 3,
+      "type": "Box",
+      "region": "E"
+    },
+    {
+      "y": 4,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 9,
+      "type": "Wall"
+    },
+    {
+      "y": 4,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 9,
+      "type": "Wall"
+    },
+    {
+      "y": 5,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 0,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 1,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 2,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 3,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 4,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 5,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 6,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 7,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 8,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 9,
+      "type": "Wall"
+    },
+    {
+      "y": 6,
+      "x": 10,
+      "type": "Wall"
+    },
+    {
+      "y": 2,
+      "x": 3,
+      "type": "Origin",
+      "region": "C"
+    },
+    {
+      "y": 2,
+      "x": 3,
+      "val": 3,
+      "type": "Timer",
+      "region": "C"
+    },
+    {
+      "y": 3,
+      "x": 7,
+      "type": "Origin",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 7,
+      "val": 2,
+      "type": "Timer",
+      "region": "A"
+    },
+    {
+      "y": 3,
+      "x": 9,
+      "type": "Goal"
+    }
+  ]
+}

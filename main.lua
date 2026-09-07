@@ -267,7 +267,7 @@ function love.draw()
     Animation.draw()
     -- Element.draw(state.rootElement)
 
-    love.graphics.print("Current FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, 10)
+    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, state.height - 25, 0, 0.5)
 end
 
 function love.keypressed(key)
