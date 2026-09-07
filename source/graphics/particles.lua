@@ -22,7 +22,7 @@ function Particle.teleParticle(x, y, level, cell)
     local color = level.palette[cell.cell]
     while color.r == nil do
         local rootColor = color
-        color = color[string.byte(cell.region) - 64]
+        color = color[cell.region]
         if color == nil then
             if cell.region == 'P' then
                 color = rootColor.player

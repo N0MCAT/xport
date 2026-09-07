@@ -31,6 +31,7 @@ local function validateLevel(result)
 end
 
 function Levels.encodeLevelFromFile(area, id, content)
+    debugPrint("[LEVELS] Encoding", area .. "/" .. id .. "...")
     local result, success = JSONParser.parse(content)
     result = result or {} -- calm down zed...???
 
