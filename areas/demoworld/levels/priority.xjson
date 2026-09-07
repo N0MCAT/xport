@@ -1,8 +1,8 @@
 {
-  "width": 13,
-  "height": 10,
   "title": "X - Priority Switch",
   "subtitle": "",
+  "width": 13,
+  "height": 10,
   "palette": "demoworld/challenge",
   "musicID": "mus_challenge3",
   "cells": [
@@ -230,7 +230,7 @@
       "y": 5,
       "x": 5,
       "type": "Box",
-      "region": "C"
+      "region": 3
     },
     {
       "y": 5,
@@ -296,19 +296,19 @@
       "y": 7,
       "x": 3,
       "type": "Box",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 7,
       "x": 4,
       "type": "Box",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 7,
       "x": 5,
       "type": "Box",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 7,
@@ -434,27 +434,27 @@
       "y": 7,
       "x": 3,
       "type": "Origin",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 7,
       "x": 3,
       "val": 2,
       "type": "Timer",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 7,
       "x": 5,
       "type": "Origin",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 7,
       "x": 5,
       "val": 3,
       "type": "Timer",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 1,

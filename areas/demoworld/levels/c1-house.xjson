@@ -1,8 +1,8 @@
 {
-  "width": 7,
-  "height": 7,
   "title": "C1 - demoworld.levelC1.title",
   "subtitle": "",
+  "width": 7,
+  "height": 7,
   "palette": "demoworld/challenge",
   "musicID": "mus_challenge1",
   "cells": [
@@ -85,13 +85,13 @@
       "y": 4,
       "x": 2,
       "type": "Box",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 4,
       "x": 4,
       "type": "Box",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 4,
@@ -167,27 +167,27 @@
       "y": 4,
       "x": 2,
       "type": "Origin",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 4,
       "x": 2,
       "val": 3,
       "type": "Timer",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 4,
       "x": 4,
       "type": "Origin",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 4,
       "x": 4,
       "val": 3,
       "type": "Timer",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 2,

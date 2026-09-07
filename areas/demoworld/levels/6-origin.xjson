@@ -1,8 +1,8 @@
 {
-  "width": 8,
-  "height": 8,
   "title": "6 - demoworld.level6.title",
   "subtitle": "demoworld.level6.description",
+  "width": 8,
+  "height": 8,
   "palette": "demoworld/a_colors",
   "musicID": "mus_level2",
   "cells": [
@@ -175,19 +175,19 @@
       "y": 5,
       "x": 2,
       "type": "Box",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 5,
       "x": 3,
       "type": "Box",
-      "region": "B"
+      "region": 2
     },
     {
       "y": 5,
       "x": 4,
       "type": "Box",
-      "region": "C"
+      "region": 3
     },
     {
       "y": 5,
@@ -258,14 +258,14 @@
       "y": 5,
       "x": 4,
       "type": "Origin",
-      "region": "C"
+      "region": 3
     },
     {
       "y": 5,
       "x": 4,
       "val": 2,
       "type": "Timer",
-      "region": "C"
+      "region": 3
     },
     {
       "y": 1,

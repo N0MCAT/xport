@@ -1,8 +1,8 @@
 {
-  "width": 9,
-  "height": 5,
   "title": "1 - demoworld.level1.title",
   "subtitle": "demoworld.level1.description",
+  "width": 9,
+  "height": 5,
   "palette": "demoworld/a_colors",
   "musicID": "mus_level1",
   "cells": [
@@ -115,7 +115,7 @@
       "y": 3,
       "x": 4,
       "type": "Box",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 3,

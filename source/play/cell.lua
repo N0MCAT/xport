@@ -29,9 +29,9 @@ function Cell.draw(cell, level)
     local color = level.palette[cell.cell] or col(0, 0, 0)
     while color.r == nil do
         local rootColor = color
-        color = color[string.byte(cell.region) - 64]
+        color = color[cell.region]
         if color == nil then
-            if cell.region == 'P' then
+            if cell.cell == Cell.Player then
                 color = rootColor.player
             else
                 color = rootColor.default
@@ -197,7 +197,7 @@ function Cell.fromLegacyChar(x, y, character)
     if character == "#" then
         return Cell.makeData(x, y, Cell.Wall)
     elseif string.match(character, "[ABCDEF]") then
-        return Cell.makeData(x, y, Cell.Box, character)
+        return Cell.makeData(x, y, Cell.Box, string.byte(character) - 64)
     elseif character == "P" then
         return Cell.makeData(x, y, Cell.Player)
     elseif character == "T" then

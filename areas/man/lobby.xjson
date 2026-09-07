@@ -1,8 +1,8 @@
 {
-  "width": 9,
-  "height": 10,
   "title": "",
   "subtitle": "There is a man here.",
+  "width": 9,
+  "height": 10,
   "palette": "man/secret",
   "musicID": "mus_secret",
   "cells": [
@@ -90,7 +90,7 @@
       "y": 3,
       "x": 3,
       "type": "Box",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 3,
@@ -261,14 +261,14 @@
       "y": 3,
       "x": 3,
       "type": "Origin",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 3,
       "x": 3,
       "val": 0,
       "type": "Timer",
-      "region": "A"
+      "region": 1
     },
     {
       "y": 3,
