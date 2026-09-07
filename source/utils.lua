@@ -269,3 +269,7 @@ function depthPrint(depth, ...)
 
     print(string)
 end
+
+function clamp(min, value, max)
+    return math.min(max, math.max(value, min))
+end

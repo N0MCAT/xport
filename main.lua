@@ -174,39 +174,7 @@ function love.load()
     --     })
     -- end)
 
-    -- local ctx = {}
-    -- state.rootElement = Element.new(ctx, {
-    --     color = { 32, 32, 50, 200 },
-    --     padding = { 10, 10, 10, 10 },
-    --     spacing = 10,
-    --     sizing = {
-    --         width = Size.Fixed { amount = love.graphics.getWidth() - 20 },
-    --         height = Size.Fixed { amount = love.graphics.getHeight() - 20 }
-    --     },
-    --     align = { y = AlignY.Center }
-    -- }, function(_)
-    --     Button.new(ctx, {
-    --         color = { 50, 70, 70, 200 },
-    --         sizing = { width = Size.Grow, height = Size.Grow },
-    --         spacing = 10,
-    --         padding = { 10, 10, 10, 10 },
-    --         layoutDir = LayoutDir.TopToBottom
-    --     }, function(_)
-    --         for i=1,10 do
-    --             Element.new(ctx, {
-    --                 color = { i * 50, 70, 70, 200 },
-    --                 sizing = { width = Size.Grow, height = Size.Grow }
-    --             })
-    --         end
-    --     end)
-    --     Element.new(ctx, {
-    --         color = { 50, 70, 70, 200 },
-    --         sizing = { width = Size.Percent { amount = 0.2 }, height = Size.Percent { amount = love.graphics.getWidth() / 5 } }
-    --     })
-    -- end)
-
-    -- Element.initialize(state.rootElement)
-
+    state.ui = Element.makeContext()
     updateGraphics()
 end
 
@@ -224,8 +192,9 @@ function love.update(dt)
     for i, _ in ipairs(Mouse.justDown) do
         Mouse.isDown[i] = love.mouse.isDown(i)
     end
-
     updateGraphics()
+
+    -- Element.test()
 
     local currentKey = KEYS_PRESSED[#KEYS_PRESSED]
     if currentKey ~= nil then
@@ -265,6 +234,7 @@ function love.draw()
         Interface.draw(state.interface)
     end
     Animation.draw()
+
     -- Element.draw(state.rootElement)
 
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, state.height - 25, 0, 0.5)

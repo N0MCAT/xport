@@ -7,24 +7,24 @@ Size = {
     Fit = {},
     Fixed = { amount = 0 },
     Grow = {},
-}; enumerate(Size)
+} enumerate(Size)
 
 AlignX = {
     Left = {},
     Center = {},
     Right = {},
-}; enumerate(AlignX)
+} enumerate(AlignX)
 
 AlignY = {
     Top = {},
     Center = {},
     Bottom = {},
-}; enumerate(AlignY)
+} enumerate(AlignY)
 
 LayoutDir = {
     LeftToRight = {},
     TopToBottom = {},
-}; enumerate(LayoutDir)
+} enumerate(LayoutDir)
 
 local function validateElement(element)
     element.sizing = element.sizing or {}
@@ -51,6 +51,8 @@ local function validateElement(element)
 
     element.color = element.color or { 255, 255, 255, 255 }
     element.color[4] = element.color[4] or 255
+    element.hoverColor = element.hoverColor or element.color
+    element.hoverColor[4] = element.hoverColor[4] or 255
 
     -- absolute values
     element.width = 0
@@ -58,7 +60,126 @@ local function validateElement(element)
     element.x = 0
     element.y = 0
 
+    -- element.id = element.id or nil
     element.children = {}
+
+    local metatable = {
+        __index = function(self, index)
+            return Element[index]
+        end
+    }
+
+    setmetatable(element, metatable)
+end
+
+function Element.test()
+    state.rootElement = Element.new(state.ui, {
+        sizing = {
+            width = Size.Fixed { amount = state.width },
+            height = Size.Fixed { amount = state.height },
+        },
+        align = { x = AlignX.Center, y = AlignY.Center },
+        color = { 255, 255, 255, 50 },
+        layoutDir = LayoutDir.TopToBottom,
+        spacing = state.height * 0.1,
+        id = "root"
+    }, function(ctx)
+        Element.slider(ctx, {
+            sizing = {
+                width = Size.Fixed { amount = state.width * 0.7 },
+                height = Size.Fixed { amount = state.height * 0.05 },
+            },
+            data = state,
+            key = "musicVolume",
+            minValue = 0,
+            maxValue = 1,
+            id = "slider1"
+        })
+        Element.slider(ctx, {
+            sizing = {
+                width = Size.Fixed { amount = state.width * 0.5 },
+                height = Size.Fixed { amount = state.height * 0.1 },
+            },
+            data = state,
+            key = "musicVolume",
+            minValue = 0,
+            maxValue = 1,
+            id = "slider2"
+        })
+    end)
+    Element.initialize(state.rootElement)
+end
+
+function Element.isHovered(element)
+    if element.id then
+        local savedElement = element.ctx.ids[element.id]
+        if savedElement then
+            if pointInRect(Mouse.x, Mouse.y,
+                savedElement.x, savedElement.y, savedElement.width, savedElement.height) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function Element.isPressed(element)
+    return element:isHovered() and Mouse.isDown[1]
+end
+
+function Element.isJustClicked(element)
+    return element:isHovered() and Mouse.justDown[1]
+end
+
+function Element.get(element, key)
+    if element.id then
+        local savedElement = element.ctx.ids[element.id]
+        if savedElement then
+            return savedElement[key]
+        end
+    end
+end
+
+function Element.slider(ctx, config)
+    config.minValue = config.minValue or 0
+    config.maxValue = config.maxValue or 100
+
+    config.color = config.color or { 43, 39, 81, 255 }
+    config.headColor = config.headColor or { 255, 255, 255, 255 }
+    config.headHoverColor = config.headHoverColor or { 255, 193, 247, 255 }
+
+    Element.new(ctx, config, function(ctx)
+        local pWidth, pHeight = ctx.parent:get("width"), ctx.parent:get("height")
+        local head = Element.new(ctx, {
+            sizing = {
+                width = Size.Fixed { amount = pHeight },
+                height = Size.Fixed { amount = pHeight },
+            },
+            color = config.headColor,
+            hoverColor = config.headHoverColor,
+            id = config.id .. "#head"
+        })
+
+        if pWidth then
+            local headSize = pHeight
+            if ctx.parent:isPressed() then
+                local value = clamp(config.minValue,
+                    ((Mouse.x - ctx.parent:get("x")) / (pWidth - headSize)) * (config.maxValue - config.minValue) +
+                    config.minValue, config.maxValue)
+                config.data[config.key] = value
+                if config.connect then config.connect(value) end
+            end
+            head.position.x = (config.data[config.key] - config.minValue) / (config.maxValue - config.minValue) * (pWidth - headSize)
+            print(config.data[config.key])
+        end
+    end)
+end
+
+function Element.makeContext()
+    return {
+        ids = {},
+        parent = nil,
+    }
 end
 
 function Element.new(ctx, config, inner)
@@ -335,10 +456,32 @@ end
 --     end
 -- end
 
+function Element.saveElements(element)
+    if element.id ~= nil then
+        element.ctx.ids[element.id] = element
+    end
+
+    for _, child in ipairs(element.children) do
+        Element.saveElements(child)
+    end
+end
+
+function Element.actions(element)
+    if element:isHovered() then
+        element.color = element.hoverColor
+    end
+
+    for _, child in ipairs(element.children) do
+        Element.actions(child)
+    end
+end
+
 function Element.initialize(element)
     Element.calculateFitSizes(element)
     Element.calculateGrowSizes(element)
     Element.calculatePositions(element)
+    Element.saveElements(element)
+    Element.actions(element)
     -- Element.startAction(element)
 end
 
