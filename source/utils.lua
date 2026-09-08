@@ -126,6 +126,18 @@ function lerp(from, to, i)
     return from + (to - from) * i
 end
 
+function shallow(value)
+    if type(value) == "table" then
+        local newTable = {}
+        for k, v in pairs(value) do
+            newTable[k] = v
+        end
+        return newTable
+    else
+        return value
+    end
+end
+
 function clone(value)
     if type(value) == "table" then
         local newTable = {}

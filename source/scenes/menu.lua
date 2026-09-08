@@ -199,8 +199,6 @@ function Menu.create()
             connect = function(scrollbar, value)
                 local newLang = Locale.languages[value + 1]
                 Locale.changeLanguage(newLang)
-
-                scrollbar.label = "menu.language." .. newLang
                 return value
             end,
             -- release = function(scrollbar, value)
@@ -209,7 +207,7 @@ function Menu.create()
 
             --     scrollbar.label = "menu.language.label\n(menu.language." .. Locale.current .. ")"
             -- end,
-            label = "menu.language.en_US"
+            label = "menu.language"
         }
     })
 end

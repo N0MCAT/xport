@@ -80,7 +80,6 @@ function Element.test()
         },
         align = { x = AlignX.Center, y = AlignY.Center },
         color = { 255, 255, 255, 50 },
-        layoutDir = LayoutDir.TopToBottom,
         spacing = state.height * 0.1,
         id = "root"
     }, function(ctx)
@@ -98,8 +97,8 @@ function Element.test()
         })
         Element.slider(ctx, {
             sizing = {
-                width = Size.Fixed { amount = state.width * 0.5 },
-                height = Size.Fixed { amount = state.height * 0.1 },
+                width = Size.Fixed { amount = state.width * 0.1 },
+                height = Size.Fixed { amount = state.height * 0.5 },
             },
             snapping = #Locale.languages,
             id = "localeSlider",
@@ -153,74 +152,95 @@ function Element.set(element, key, value)
 end
 
 function Element.slider(ctx, config)
-    config.minValue = config.minValue or 0
-    config.maxValue = config.maxValue or ((config.snapping or 2) - 1)
-    config.id = config.id or config.key
-    config.key = config.key or "value"
-
-    config.color = config.color or { 43, 39, 81, 255 }
-    config.headColor = config.headColor or { 255, 255, 255, 255 }
-    config.headHoverColor = config.headHoverColor or { 255, 193, 247, 255 }
+    local autoLayout = config.layoutDir == nil
+    -- Custom validation was moved to the bottom!
 
     Element.new(ctx, config, function(ctx)
+        local parent = ctx.parent
+
         -- For sliders that don't directly modify external data,
         -- it can be omitted so that the parent itself handles the data.
-        if config.data == nil then
-            ctx.parent.sliderData = ctx.parent:get("sliderData") or {}
-            config.data = ctx.parent.sliderData
+        if parent.data == nil then
+            parent.data = parent:get("data") or {}
         end
 
-        config.data[config.key] = config.data[config.key] or config.minValue
-
-        local pWidth, pHeight = ctx.parent:get("width"), ctx.parent:get("height")
-        local head = Element.new(ctx, {
-            sizing = {
-                width = Size.Fixed { amount = pHeight },
-                height = Size.Fixed { amount = pHeight },
-            },
-            color = config.headColor,
-            hoverColor = config.headHoverColor,
-            id = config.id .. "#head"
-        })
+        parent.data[parent.key] = parent.data[parent.key] or parent.minValue
+        local pWidth, pHeight = parent:get("width"), parent:get("height")
 
         if pWidth then
-            local headSize = pHeight
+            if autoLayout then
+                if pWidth < pHeight then
+                    parent.layoutDir = LayoutDir.TopToBottom
+                else
+                    parent.layoutDir = LayoutDir.LeftToRight
+                end
+            end
+
+            local isHorizontal = parent.layoutDir:is(LayoutDir.LeftToRight)
+            local headSize = isHorizontal and pHeight or pWidth
+            parent.invert = isHorizontal and parent.invert or (not parent.invert)
+
+            local head = Element.new(ctx, {
+                sizing = {
+                    width = Size.Fixed { amount = headSize },
+                    height = Size.Fixed { amount = headSize },
+                },
+                color = parent.headColor,
+                hoverColor = parent.headHoverColor,
+                id = parent.id .. "#head"
+            })
+
+            local bodySize = isHorizontal and pWidth or pHeight
+            local axis = isHorizontal and "x" or "y"
 
             if head:isJustClicked() then
-                ctx.parent:set("sliderOffset", Mouse.x - head:get("x"))
-                ctx.parent:set("dragging", true)
-            elseif ctx.parent:isJustClicked() then
-                ctx.parent:set("sliderOffset", headSize * 0.5)
-                ctx.parent:set("dragging", true)
+                parent:set("sliderOffset", Mouse[axis] - head:get(axis))
+                parent:set("dragging", true)
+            elseif parent:isJustClicked() then
+                parent:set("sliderOffset", headSize * 0.5)
+                parent:set("dragging", true)
             end
 
-            if Mouse.isDown[1] and ctx.parent:get("dragging") then
-                local sliderOffset = ctx.parent:get("sliderOffset")
-                ctx.parent.sliderOffset = sliderOffset
-                ctx.parent.dragging = true
+            if Mouse.isDown[1] and parent:get("dragging") then
+                local sliderOffset = parent:get("sliderOffset")
+                parent.sliderOffset = sliderOffset
+                parent.dragging = true
 
-                local value = ((Mouse.x - ctx.parent:get("x") - sliderOffset) / (pWidth - headSize))
+                local value = ((Mouse[axis] - parent:get(axis) - sliderOffset) / (bodySize - headSize))
+                if parent.invert then value = 1 - value end
 
-                if config.snapping then
-                    value = math.floor(value * (config.snapping - 1) + 0.5)
-                    if config.snapping == (config.maxValue - config.minValue) then
-                        value = value + config.minValue
+                if parent.snapping then
+                    value = math.floor(value * (parent.snapping - 1) + 0.5)
+                    if parent.snapping == (parent.maxValue - parent.minValue) then
+                        value = value + parent.minValue
                     else
-                        value = value / (config.snapping - 1) * (config.maxValue - config.minValue) + config.minValue
+                        value = value / (parent.snapping - 1) * (parent.maxValue - parent.minValue) + parent.minValue
                     end
                 else
-                    value = value * (config.maxValue - config.minValue) + config.minValue
+                    value = value * (parent.maxValue - parent.minValue) + parent.minValue
                 end
 
-                value = clamp(config.minValue, value, config.maxValue)
+                value = clamp(parent.minValue, value, parent.maxValue)
 
-                local oldValue = config.data[config.key]
-                config.data[config.key] = value
-                if oldValue ~= value and config.connect then config.connect(value) end
+                local oldValue = parent.data[parent.key]
+                parent.data[parent.key] = value
+                if oldValue ~= value and parent.connect then parent.connect(value) end
             end
-            head.position.x = (config.data[config.key] - config.minValue) / (config.maxValue - config.minValue) * (pWidth - headSize)
-            print(config.data[config.key])
+
+            local value = (parent.data[parent.key] - parent.minValue) / (parent.maxValue - parent.minValue)
+            value = parent.invert and 1 - value or parent.data[parent.key]
+            head.position[axis] = value * (bodySize - headSize)
+            print(parent.data[parent.key])
         end
+    end, function (element)
+        element.minValue = element.minValue or 0
+        element.maxValue = element.maxValue or ((element.snapping or 2) - 1)
+        element.id = element.id or element.key
+        element.key = element.key or "value"
+
+        element.color = element.color or { 43, 39, 81, 255 }
+        element.headColor = element.headColor or { 255, 255, 255, 255 }
+        element.headHoverColor = element.headHoverColor or { 255, 193, 247, 255 }
     end)
 end
 
@@ -231,13 +251,14 @@ function Element.makeContext()
     }
 end
 
-function Element.new(ctx, config, inner)
+function Element.new(ctx, config, inner, validate)
     local self = {
         ctx = ctx,
         inner = inner or function(_) end,
     }
 
     for key, value in pairs(config) do self[key] = value end
+    if validate then validate(self) end
     validateElement(self)
 
     local previousParent = ctx.parent

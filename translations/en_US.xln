@@ -24,7 +24,4 @@ demoworld.level6.description \: There is a room in between.
 menu.volume.sfx \: sfx
 menu.volume.music \: music
 
-menu.language.en_US \: English
-menu.language.fil_PH \: Filipino
-menu.language.sitelen_pona \: Sitelen Pona
-menu.language.toki_pona \: Toki Pona
+menu.language \: English
