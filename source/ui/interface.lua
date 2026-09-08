@@ -23,6 +23,7 @@ function Interface.new()
         debug = {}
     }
 
+    bindPrototype(interface, Interface)
     return interface
 end
 
