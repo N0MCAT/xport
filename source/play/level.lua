@@ -69,16 +69,18 @@ function Level.new(id, area, width, height, cells, palette, musicID, number, tit
         id = id,
         area = area,
 
+        x = 0,
+        y = 0,
+
         width = width,
         height = height,
+        scale = 1,
 
         cells = cells,
         palette = palette and require('areas.' .. string.gsub(palette, '/', '.palettes.')) or Palette.defaultList(),
         musicID = musicID or 'undefined',
         winning = false,
 
-        cellSize = 0,
-        layers = {},
         eventLog = {},
         goalPlaying = false,
 
@@ -87,11 +89,8 @@ function Level.new(id, area, width, height, cells, palette, musicID, number, tit
         subtitle = Locale.localizeText(subtitle),
     }
 
+    bindPrototype(result, Level)
     return result
-end
-
-function Level.fromSingleGrid(grid, cells)
-
 end
 
 function Level.fromData(levelData)
@@ -102,21 +101,6 @@ function Level.fromData(levelData)
 
     return Level.new(levelData.id, levelData.area, levelData.width, levelData.height, cells,
         levelData.palette, levelData.musicID, levelData.number, levelData.title, levelData.subtitle)
-end
-
-function Level.onResize(level)
-    level.cellSize = math.min(state.width / level.width, state.height / level.height) * 0.65
-
-    for i = 1, 5 do
-        if level.layers[i] ~= nil then level.layers[i]:release() end
-        level.layers[i] = love.graphics.newCanvas()
-    end
-end
-
-function Level.reloadFonts(level, overrideFont)
-    globals.levelFont = love.graphics.newFont(overrideFont or globals.levelFontFile, math.min(state.width, state.height) * 0.067)
-    globals.timerFont = love.graphics.newFont(globals.fontFile, level.cellSize * 0.9)
-    globals.ponaTimerFont = love.graphics.newFont(globals.ponaTimerFontFile, level.cellSize * 0.45)
 end
 
 function Level.update(level, dt)
@@ -131,66 +115,25 @@ function Level.update(level, dt)
     end
 end
 
-function Level.drawPos(level, x, y)
-    return x * level.cellSize + (state.width - level.width * level.cellSize) / 2,
-           y * level.cellSize + (state.height - level.height * level.cellSize) / 2
-end
+function Level.draw(level, layers)
+    love.graphics.push()
+    love.graphics.translate((state.width - level.width * level.scale) / 2,
+        (state.height - level.height * level.scale) / 2)
 
-function Level.draw(level)
     love.graphics.setBackgroundColor(level.palette.background())
     love.graphics.setColor(level.palette.levelStroke())
     love.graphics.setLineWidth(5)
-    love.graphics.rectangle("line", (state.width - level.width * level.cellSize) / 2, (state.height - level.height * level.cellSize) / 2,
-        level.cellSize * level.width, level.cellSize * level.height)
+    love.graphics.rectangle("line", 0, 0, level.scale * level.width, level.scale * level.height)
     love.graphics.setLineWidth(1)
 
     love.graphics.setColor(level.palette.levelFill())
-    love.graphics.rectangle("fill", (state.width - level.width * level.cellSize) / 2, (state.height - level.height * level.cellSize) / 2,
-        level.cellSize * level.width, level.cellSize * level.height)
+    love.graphics.rectangle("fill", 0, 0, level.scale * level.width, level.scale * level.height)
     love.graphics.setColor(1, 1, 1)
 
     for _, cell in ipairs(level.cells) do
-        cell:draw(level)
+        cell:draw(level, layers)
     end
-
-    love.graphics.setCanvas()
-    love.graphics.setBlendMode("alpha", "premultiplied")
-
-    for i, layer in ipairs(level.layers) do
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(layer)
-
-        love.graphics.setCanvas(layer)
-        love.graphics.clear()
-        love.graphics.setCanvas()
-    end
-
-    love.graphics.setBlendMode("alpha") -- Default blend mode.
-
-    if level.number ~= "" and level.title ~= "" then
-        local padding = level.cellSize / 2
-        local header = level.number .. " - "
-        local footer = ""
-        if Locale.current == "sitelen_pona" then
-            header = "󱤽" .. Locale.levelNumberSitelenPona(level.number) .. "󱤡 「 "
-            footer = " 」"
-        end
-
-        love.graphics.print(header.. level.title .. footer, globals.levelFont, padding, padding)
-    end
-
-    if level.subtitle then
-        local padding = level.cellSize / 2
-        local _, fontWrapped = globals.hintFont:getWrap(level.subtitle, state.width - padding)
-        local fontHeight = globals.hintFont:getHeight()
-        for i, text in ipairs(fontWrapped) do
-            local fontWidth = globals.hintFont:getWidth(text)
-            love.graphics.print(text, globals.hintFont, (state.width - fontWidth) / 2,
-                state.height - padding - fontHeight * (#fontWrapped - i + 1))
-        end
-        -- all our homies hate printf. i think
-        -- love.graphics.printf(level.subtitle, globals.hintFont, 0, state.height - padding - fontHeight, state.width - padding, "center")
-    end
+    love.graphics.pop()
 end
 
 -- modified so that it returns nil when out of bounds instead of saturating
@@ -384,7 +327,7 @@ local function secondPassEvents(level, teleports)
     return unbannedevents
 end
 
-local function isWinning(level)
+function Level.isWinning(level)
     local winning = true
     for _, cell in ipairs(level.cells) do
         if cell.cell == Cell.Goal then
@@ -395,6 +338,7 @@ local function isWinning(level)
 
             if #boxes == 0 then
                 winning = false
+                break
             end
         end
     end
@@ -459,25 +403,6 @@ local function runEvent(level, event)
 end
 
 function Level.turn(level, key)
-    if level.goalPlaying then return end
-
-    if key == "escape" or key == "backspace" then
-        if (globals.entered_level_six ~= 6) then
-            state.mode = Mode.Menu
-            Animation.start(Level.fadeFromBlack(2))
-            Music.play(Music.menu, 0.2)
-        else
-            -- state.levelIndex = -6
-            globals.entered_level_six = 6.66
-            state.level = Level.fromData(Levels.areas.man.lobby)
-            Animation.start(Level.fadeFromBlack(1))
-            Music.play(Music[Levels.areas.man.lobby.musicID], 1)
-        end
-        Sounds.levelRestart:play()
-        forceUpdateGraphics()
-        return
-    end
-
     local direction
     if key == "up"          or key == "w" then
         direction = Direction.Up
@@ -541,69 +466,4 @@ function Level.turn(level, key)
 
     append(teleports, events) -- very important that teleports get undone before moves
     if #teleports > 0 then table.insert(level.eventLog, teleports) end
-
-    if isWinning(level) then
-        Sounds.levelComplete:play()
-        -- Levels.areas[state.levelArea].levels[state.levelIndex].isCleared = true
-        Levels.clears[level.area .. '/' .. level.id] = true
-        Save.writeFile(Levels.clears, 'levelClears.xjson')
-        -- state.levelClears[state.levelIndex] = true
-
-        -- print("-----")
-        -- print(state.currentMusic.filename)
-        -- print("-----")
-
-        local goals = allWithPredicate(level.cells, function(cell)
-            return cell.cell == Cell.Goal
-        end)
-        local startDelay = 0.5
-        local goalAnimTime = 2.0
-        local endAnimTime = 1.0
-        for _, goal in ipairs(goals) do
-            Animation.delayedStart(startDelay, Level.levelClearAnim(goalAnimTime, level, goal))
-        end
-        Animation.delayedStart(startDelay + goalAnimTime, Level.levelEndAnim(endAnimTime, level))
-
-        level.goalPlaying = true
-    end
-end
-
-function Level.levelClearAnim(duration, level, goal)
-    local r, g, b = level.palette.levelTransition()
-    return Animation.new(duration, function(self, progress)
-        local progress = easeInOutCubic(progress)
-        local scale =
-            math.max(state.width, state.height) * progress * 2
-        local angle = progress * 2 * math.pi
-        love.graphics.setColor(r, g, b)
-        drawRotatedRectangle("fill",
-            (goal.x + 0.5) * level.cellSize + (state.width - level.width * level.cellSize) / 2,
-            (goal.y + 0.5) * level.cellSize + (state.height - level.height * level.cellSize) / 2,
-            scale, scale, angle)
-        love.graphics.setColor(1, 1, 1)
-    end)
-end
-
-
-function Level.levelEndAnim(duration, level)
-    local r, g, b = level.palette.levelTransition()
-    return Animation.new(duration, function(self, progress)
-        local progress = easeOutCubic(progress)
-        local scale = math.max(state.width, state.height)
-        love.graphics.setColor(r, g, b, 1 - progress)
-        drawRotatedRectangle("fill", state.width / 2, state.height / 2, scale, scale, 0)
-        love.graphics.setColor(1, 1, 1)
-    end, function()
-        state.mode = Mode.Menu
-        forceUpdateGraphics()
-        Music.play(Music.menu, 0.5)
-    end)
-end
-
-function Level.fadeFromBlack(duration)
-    return Animation.new(duration, function(self, progress)
-        love.graphics.setColor(0, 0, 0, 1 - easeOutExpo(progress))
-        drawRotatedRectangle("fill", state.width / 2, state.height / 2, state.width, state.height, 0)
-        love.graphics.setColor(1, 1, 1)
-    end)
 end

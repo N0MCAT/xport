@@ -22,10 +22,14 @@ function Cell.lineWidth(cellSize, strokeSize)
     -- return strokeSize
 end
 
-function Cell.draw(cell, level)
+function Cell.drawPos(scale, x, y)
+    return x * scale, y * scale
+end
+
+function Cell.draw(cell, level, layers)
     local expAnimTime = easeOutExpo(cell.animTime)
-    local x, y = lerp(cell.lastX, cell.x, expAnimTime), lerp(cell.lastY, cell.y, expAnimTime)
-    local cellSize = level.cellSize
+    local x, y = lerp(cell.lastX or cell.x, cell.x, expAnimTime), lerp(cell.lastY or cell.y, cell.y, expAnimTime)
+    local cellSize = level.scale
 
     local color = level.palette[cell.cell] or col(0, 0, 0)
     while color.r == nil do
@@ -43,34 +47,33 @@ function Cell.draw(cell, level)
     local r, g, b = color()
     love.graphics.setColor(r, g, b)
 
-    local drawX, drawY = Level.drawPos(level, x + 0.5, y + 0.5)
+    local drawX, drawY = Cell.drawPos(level.scale, x + 0.5, y + 0.5)
 
     if cell.cell == Cell.Goal then
         love.graphics.setColor(r, g, b, 0.45)
-        love.graphics.setCanvas(level.layers[1])
+        love.graphics.setCanvas(layers[1])
         love.graphics.setLineWidth(Cell.lineWidth(cellSize, 5))
         drawCenteredRectangle("line", drawX, drawY, cellSize, cellSize)
 
         love.graphics.setColor(r, g, b, 0.15)
-        love.graphics.setCanvas(level.layers[5])
+        love.graphics.setCanvas(layers[5])
         love.graphics.setLineWidth(Cell.lineWidth(cellSize, 5))
         drawCenteredRectangle("line", drawX, drawY, cellSize, cellSize)
         love.graphics.setLineWidth(Cell.lineWidth(cellSize, 1))
-
     elseif cell.cell == Cell.Player then
         local w
         if cell.animTime == 1 then
             w = 1
         else
-            w = cosh(1.3169578969248*(expAnimTime - 0.5)) - 0.25 -- don't worry ! that horrendous constant is just arccosh(2)
+            w = cosh(1.3169578969248 * (expAnimTime - 0.5)) -
+            0.25                                                 -- don't worry ! that horrendous constant is just arccosh(2)
         end
         local h = 2 - w
 
         if cell.lastY == cell.y then h, w = w, h end
 
-        love.graphics.setCanvas(level.layers[5])
+        love.graphics.setCanvas(layers[5])
         drawCenteredRectangle("fill", drawX, drawY, w * cellSize, h * cellSize)
-
     elseif cell.cell == Cell.Wall or cell.cell == Cell.Box then
         local timerIsZero = false
         if cell.cell == Cell.Box then
@@ -82,23 +85,21 @@ function Cell.draw(cell, level)
             end
         end
 
-        love.graphics.setCanvas(level.layers[3])
+        love.graphics.setCanvas(layers[3])
         if timerIsZero then
             love.graphics.setColor(r - 0.2, g - 0.2, b - 0.2) -- REALLY stupid
         end
         drawCenteredRectangle("fill", drawX, drawY, cellSize, cellSize)
 
         if (r ~= 0 or g ~= 0 or b ~= 0) then
-            love.graphics.setCanvas(level.layers[2])
+            love.graphics.setCanvas(layers[2])
             love.graphics.setColor(r + 0.2, g + 0.2, b + 0.2) -- REALLY stupid
             love.graphics.setLineWidth(Cell.lineWidth(cellSize, 4))
             drawCenteredRectangle("line", drawX, drawY, cellSize, cellSize)
             love.graphics.setLineWidth(Cell.lineWidth(cellSize, 1))
         end
-
     elseif cell.cell == Cell.Timer then
-
-        love.graphics.setCanvas(level.layers[5])
+        love.graphics.setCanvas(layers[5])
         love.graphics.setLineWidth(Cell.lineWidth(cellSize, 1))
         local timerFont, val
         if Locale.current == "sitelen_pona" then
@@ -114,8 +115,8 @@ function Cell.draw(cell, level)
         love.graphics.print(val, timerFont,
             drawX - (fwidth / 2),
             drawY - (fheight / 2)
-            -- drawX + (cellSize - fwidth) / 2,
-            -- drawY + (cellSize - fheight * 0.8) / 2
+        -- drawX + (cellSize - fwidth) / 2,
+        -- drawY + (cellSize - fheight * 0.8) / 2
         )
 
         love.graphics.setColor(1, 1, 1, 0.5)
@@ -124,19 +125,17 @@ function Cell.draw(cell, level)
             return c.region == cell.region and c.cell == Cell.Origin
         end)
 
-        love.graphics.setCanvas(level.layers[1])
+        love.graphics.setCanvas(layers[1])
         for _, origin in ipairs(origins) do
-            love.graphics.line(drawX, drawY, Level.drawPos(level, origin.x + 0.5, origin.y + 0.5))
+            love.graphics.line(drawX, drawY, Cell.drawPos(level.scale, origin.x + 0.5, origin.y + 0.5))
         end
-
     elseif cell.cell == Cell.Origin then
-        love.graphics.setCanvas(level.layers[3])
+        love.graphics.setCanvas(layers[3])
         drawRotatedRectangle("fill", drawX, drawY, cellSize / 2, cellSize / 2, cell.animTime * 2 * math.pi)
-
     elseif cell.cell == Cell.Tree then
         local scale = cellSize / 150
         local w, h = globals.tree:getWidth() * scale, globals.tree:getHeight() * scale
-        love.graphics.setCanvas(level.layers[5])
+        love.graphics.setCanvas(layers[5])
         love.graphics.draw(
             globals.tree,
             drawX - (w / 2),
@@ -146,6 +145,8 @@ function Cell.draw(cell, level)
             scale
         )
     end
+
+    love.graphics.setCanvas()
 end
 
 function Cell.startMoveAnim(cell)
@@ -171,12 +172,12 @@ function Cell.new(x, y, id, type, region, timer)
         initial_y = y,
         default_val = timer,
 
-        draw = Cell.draw,
         animTime = 0
     }
 
     -- result.draw = drawFunctions[type] or drawFunctions.default
 
+    bindPrototype(result, Cell)
     return result
 end
 

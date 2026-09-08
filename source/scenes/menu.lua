@@ -29,6 +29,7 @@ function Menu.new(width, height, levelRects, scrollBars)
         rect.scale = 1
     end
 
+    bindPrototype(menu, Menu)
     return menu
 end
 
@@ -613,18 +614,18 @@ function Menu.levelStart(menu, rect, realX, realY, realW, realH)
                 state.levelArea = rect.levelArea
                 state.levelIndex = rect.levelIndex
 
-                state.level = newLevel
+                state.scene = PlayState.new(newLevel)
 
                 if (state.levelIndex == 6) then globals.entered_level_six = globals.entered_level_six + 1
                 else globals.entered_level_six = 0 end
 
                 Sounds.levelStart:play()
-                state.mode = Mode.Gameplay
 
                 rect.clicked = false
                 rect.hovering = false
                 rect.scale = 1
                 menu.levelOpening = false
+
                 forceUpdateGraphics()
             end
         )

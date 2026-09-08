@@ -62,14 +62,6 @@ local function validateElement(element)
 
     -- element.id = element.id or nil
     element.children = {}
-
-    local metatable = {
-        __index = function(self, index)
-            return Element[index]
-        end
-    }
-
-    setmetatable(element, metatable)
 end
 
 function Element.test()
@@ -91,7 +83,7 @@ function Element.test()
             data = state,
             key = "musicVolume",
             id = "musicSlider",
-            connect = function(value)
+            onChange = function(value)
                 Sounds.move:play(true)
             end
         })
@@ -102,7 +94,7 @@ function Element.test()
             },
             snapping = #Locale.languages,
             id = "localeSlider",
-            connect = function(value)
+            onChange = function(value)
                 local newLang = Locale.languages[value + 1]
                 Locale.changeLanguage(newLang)
                 return value
@@ -224,7 +216,7 @@ function Element.slider(ctx, config)
 
                 local oldValue = parent.data[parent.key]
                 parent.data[parent.key] = value
-                if oldValue ~= value and parent.connect then parent.connect(value) end
+                if oldValue ~= value and parent.onChange then parent.onChange(value) end
             end
 
             local value = (parent.data[parent.key] - parent.minValue) / (parent.maxValue - parent.minValue)
@@ -256,6 +248,8 @@ function Element.new(ctx, config, inner, validate)
         ctx = ctx,
         inner = inner or function(_) end,
     }
+
+    bindPrototype(self, Element)
 
     for key, value in pairs(config) do self[key] = value end
     if validate then validate(self) end

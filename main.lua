@@ -9,6 +9,7 @@ require "source.graphics.anim"
 require "source.play.level"
 
 require "source.scenes.menu"
+require "source.scenes.playstate"
 require "source.graphics.palette"
 
 require "source.ui.interface"
@@ -49,7 +50,7 @@ state = {
     levelIndex = 1,
     levelClears = {},
 
-    mode = Mode.Menu
+    scene = nil
 }
 
 globals = {
@@ -89,19 +90,27 @@ function reloadFonts()
     globals.hintFont = love.graphics.newFont(ponaHintAltFile or globals.levelFontFile, math.min(state.width, state.height) * 0.05)
     -- globals.titleFont = love.graphics.newFont(globals.fontFile, state.cellSize * 0.5)
 
-    if state.mode == Mode.Gameplay then
-        Level.reloadFonts(state.level, ponaAltFile)
-    elseif state.mode == Mode.Menu then
-        Menu.reloadFonts(state.menu, ponaAltFile)
+    if state.scene.reloadFonts then
+        state.scene:reloadFonts(ponaAltFile)
     end
+
+    -- if state.mode == Mode.Gameplay then
+    --     Level.reloadFonts(state.level, ponaAltFile)
+    -- elseif state.mode == Mode.Menu then
+    --     Menu.reloadFonts(state.menu, ponaAltFile)
+    -- end
 end
 
 function forceUpdateGraphics()
-    if state.mode == Mode.Gameplay then
-        Level.onResize(state.level)
-    elseif state.mode == Mode.Menu then
-        Menu.onResize(state.menu)
+    if state.scene.onResize then
+        state.scene:onResize()
     end
+
+    -- if state.mode == Mode.Gameplay then
+    --     Level.onResize(state.level)
+    -- elseif state.mode == Mode.Menu then
+    --     Menu.onResize(state.menu)
+    -- end
 
     reloadFonts()
 end
@@ -120,11 +129,10 @@ function love.load()
 
     -- love.filesystem.write('jsontest2.jsonc', jsonencode)
 
-    state.menu = Menu.create()
+    state.scene = Menu.create()
 
     globals.challengeLevels = { 11, 12, 13, 14, 15 }
 
-    state.mode = Mode.Menu
     state.musicVolume = 0.5
     state.fullscreen = false
 
@@ -150,7 +158,6 @@ function love.load()
     }
 
     Music.play(Music.menu)
-    state.interface = Interface.new()
 
     -- state.rootElement = Element.new(ctx, {
     --     color = { 255, 0, 0 },
@@ -193,7 +200,7 @@ function love.update(dt)
     end
     updateGraphics()
 
-    Element.test()
+    -- Element.test()
 
     local currentKey = KEYS_PRESSED[#KEYS_PRESSED]
     if currentKey ~= nil then
@@ -208,13 +215,17 @@ function love.update(dt)
         end
     end
 
-    if state.mode == Mode.Gameplay then
-        Level.update(state.level, dt)
-    elseif state.mode == Mode.Menu then
-        -- Menu.update(state.menu, dt)
-    elseif state.mode == Mode.Editor then
-        Interface.update(state.interface, dt)
+    if state.scene.update then
+        state.scene:update(dt)
     end
+
+    -- if state.mode == Mode.Gameplay then
+    --     Level.update(state.level, dt)
+    -- elseif state.mode == Mode.Menu then
+    --     Menu.update(state.menu, dt)
+    -- elseif state.mode == Mode.Editor then
+    --     Interface.update(state.interface, dt)
+    -- end
 
     for i, _ in ipairs(Mouse.justDown) do
         Mouse.justDown[i] = false
@@ -225,16 +236,20 @@ end
 function love.draw()
     -- does this not have deltatime?
     -- japi: yeah it's kinda crazy
-    if state.mode == Mode.Gameplay then
-        Level.draw(state.level)
-    elseif state.mode == Mode.Menu then
-        Menu.draw(state.menu)
-    elseif state.mode == Mode.Editor then
-        Interface.draw(state.interface)
+
+    if state.scene.draw then
+        state.scene:draw()
     end
+    -- if state.mode == Mode.Gameplay then
+    --     Level.draw(state.level)
+    -- elseif state.mode == Mode.Menu then
+    --     Menu.draw(state.menu)
+    -- elseif state.mode == Mode.Editor then
+    --     Interface.draw(state.interface)
+    -- end
     Animation.draw()
 
-    Element.draw(state.rootElement)
+    -- Element.draw(state.rootElement)
 
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, state.height - 25, 0, 0.5)
 end
@@ -249,17 +264,21 @@ function love.keypressed(key)
        state.fullscreen = not state.fullscreen
        love.window.setFullscreen(state.fullscreen)
     elseif key == "e" then
-        state.mode = Mode.Editor
+        -- state.mode = Mode.Editor
+        state.scene = Interface.new()
         state.musicVolume = 0.0
     end
 end
 
 function pressedKey(key)
-    if state.mode == Mode.Gameplay then
-        Level.turn(state.level, key)
-    elseif state.mode == Mode.Menu then
-        Menu.keypressed(state.menu, key)
+    if state.scene.keypressed then
+        state.scene:keypressed(key)
     end
+    -- if state.mode == Mode.Gameplay then
+    --     Level.turn(state.level, key)
+    -- elseif state.mode == Mode.Menu then
+    --     Menu.keypressed(state.menu, key)
+    -- end
 end
 
 function love.keyreleased(key)
@@ -274,15 +293,21 @@ function keyClear(key, time)
 end
 
 function love.wheelmoved(x, y)
-    if state.mode == Mode.Editor then
-        Interface.wheelmoved(state.interface, x, y)
+    if state.scene.wheelmoved then
+        state.scene:wheelmoved(x, y)
     end
+    -- if state.mode == Mode.Editor then
+    --     Interface.wheelmoved(state.interface, x, y)
+    -- end
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    if state.mode == Mode.Editor then
-        Interface.mousemoved(state.interface, x, y, dx, dy, istouch)
+    if state.scene.mousemoved then
+        state.scene:mousemoved(x, y, dx, dy, istouch)
     end
+    -- if state.mode == Mode.Editor then
+    --     Interface.mousemoved(state.interface, x, y, dx, dy, istouch)
+    -- end
 end
 
 function love.mousepressed(x, y, button, istouch, presses)

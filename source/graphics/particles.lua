@@ -6,7 +6,7 @@ require "source.graphics.anim"
 Particle = {}
 
 function Particle.playerParticle(x, y, level)
-    local cellSize = level.cellSize
+    local cellSize = level.scale
     return Animation.new(
         1.5, function(self, progress)
             local progress = easeOutCubic(progress)
@@ -33,7 +33,7 @@ function Particle.teleParticle(x, y, level, cell)
     end
     -- help . how do i change the alpha
 
-    local cellSize = level.cellSize
+    local cellSize = level.scale
     local yrand = math.random() + 5.5
     local xrand = (math.random() - 0.5) * 2
     local rrand = (math.random() - 0.5) * 5
@@ -56,8 +56,7 @@ end
 
 
 function Particle.teleFailParticle(x, y, level, cell)
-
-    local cellSize = level.cellSize
+    local cellSize = level.scale
     local scalemul = 1
     if cell.cell == Cell.Timer then scalemul = 0 end
     return Animation.new(
@@ -70,7 +69,5 @@ function Particle.teleFailParticle(x, y, level, cell)
         end
     )
 end
-
-
 
 return Particle
