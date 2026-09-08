@@ -84,9 +84,9 @@ function Level.new(id, area, width, height, cells, palette, musicID, number, tit
         eventLog = {},
         goalPlaying = false,
 
-        number = Locale.localizeText(number),
-        title = Locale.localizeText(title),
-        subtitle = Locale.localizeText(subtitle),
+        number = number,
+        title = title,
+        subtitle = subtitle,
     }
 
     bindPrototype(result, Level)

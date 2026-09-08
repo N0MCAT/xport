@@ -7,6 +7,7 @@ Locale = {
     current = "en_US",
 
     languages = {},
+    ilanguages = {},
     mappings = {}
 }
 
@@ -32,6 +33,8 @@ function Locale.loadMappings()
         -- love.filesystem.write('' .. lang .. '.xjson', jsonencode)
         Locale.mappings[lang] = result
     end
+
+    Locale.ilanguages = invert(Locale.languages)
 end
 
 -- We should make sure to clear this when switching languages

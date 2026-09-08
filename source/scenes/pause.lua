@@ -12,6 +12,7 @@ function PauseMenu.new(playstate)
     local self = {
         scene = playstate,
         context = Element.makeContext(),
+        lang = { langIndex = Locale.ilanguages[Locale.current] - 1 },
         resuming = false,
         exitTimer = PauseMenu.EXIT_TIMER,
         canvas = nil,
@@ -106,20 +107,21 @@ function PauseMenu.updateUI(self)
             end
         })
 
-        -- Locale can't be changed mid-game, unfortunately...
-        -- Element.slider(ctx, {
-        --     sizing = {
-        --         width = Size.Fixed { amount = state.width * 0.1 },
-        --         height = Size.Fixed { amount = state.height * 0.5 },
-        --     },
-        --     snapping = #Locale.languages,
-        --     id = "localeSlider",
-        --     onChange = function(value)
-        --         local newLang = Locale.languages[value + 1]
-        --         Locale.changeLanguage(newLang)
-        --         return value
-        --     end
-        -- })
+        Element.slider(ctx, {
+            sizing = {
+                width = Size.Adapt { amount = 200 },
+                height = Size.Adapt { amount = 42 },
+            },
+            snapping = #Locale.languages,
+            id = "localeSlider",
+            data = self.lang,
+            key = "langIndex",
+            onChange = function(value)
+                local newLang = Locale.languages[value + 1]
+                Locale.changeLanguage(newLang)
+                return value
+            end
+        })
     end)
 
     for _, ui in ipairs(self.ui) do
@@ -143,6 +145,7 @@ function PauseMenu.onResize(self)
 end
 
 function PauseMenu.reloadFonts(self, overrideFont)
+    if self.scene.reloadFonts then self.scene:reloadFonts(overrideFont) end
 end
 
 function PauseMenu.update(self, dt)

@@ -38,6 +38,7 @@ function PlayState.exitLevel(self)
     if #self.levelStack <= 1 then
         state.scene = Menu.create()
         forceUpdateGraphics()
+        Animation.start(PlayState.fadeFromBlack(2))
         Music.play(Music.menu, 0.5)
         return true
     else
@@ -141,7 +142,7 @@ function PlayState.draw(self)
 
     if level.number ~= "" and level.title ~= "" then
         local padding = self.cellSize / 2
-        local header = level.number .. " - "
+        local header = Locale.localizeText(level.number) .. " - "
         local footer = ""
 
         if Locale.current == "sitelen_pona" then
@@ -149,16 +150,16 @@ function PlayState.draw(self)
             footer = " 」"
         end
 
-        love.graphics.print(header.. level.title .. footer, globals.levelFont, padding, padding)
+        love.graphics.print(header.. Locale.localizeText(level.title) .. footer, globals.levelFont, padding, padding)
     end
 
     if level.subtitle then
         local padding = self.cellSize / 2
-        local _, fontWrapped = globals.hintFont:getWrap(level.subtitle, state.width - padding)
+        local _, fontWrapped = globals.hintFont:getWrap(Locale.localizeText(level.subtitle), state.width - padding)
         local fontHeight = globals.hintFont:getHeight()
 
         -- all our homies hate printf. i think
-        -- love.graphics.printf(level.subtitle, globals.hintFont, 0, state.height - padding - fontHeight, state.width - padding, "center")
+        -- love.graphics.printf(subtitle, globals.hintFont, 0, state.height - padding - fontHeight, state.width - padding, "center")
 
         for i, text in ipairs(fontWrapped) do
             local fontWidth = globals.hintFont:getWidth(text)

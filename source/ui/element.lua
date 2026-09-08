@@ -195,8 +195,11 @@ function Element.slider(ctx, config)
             end
 
             local isHorizontal = parent.layoutDir:is(LayoutDir.LeftToRight)
-            local headSize = isHorizontal and pHeight or pWidth
             if not isHorizontal then parent.invert = not parent.invert end
+
+            local headSize = isHorizontal and pHeight or pWidth
+            local bodySize = isHorizontal and pWidth or pHeight
+            local axis = isHorizontal and "x" or "y"
 
             local head = Element.new(ctx, {
                 sizing = {
@@ -207,9 +210,6 @@ function Element.slider(ctx, config)
                 hoverColor = parent.headHoverColor,
                 id = parent.id .. "#head"
             })
-
-            local bodySize = isHorizontal and pWidth or pHeight
-            local axis = isHorizontal and "x" or "y"
 
             if head:isJustClicked() then
                 parent:set("sliderOffset", Mouse[axis] - head:get(axis))
@@ -246,7 +246,7 @@ function Element.slider(ctx, config)
             end
 
             local value = (parent.data[parent.key] - parent.minValue) / (parent.maxValue - parent.minValue)
-            value = parent.invert and 1 - value or parent.data[parent.key]
+            value = parent.invert and 1 - value or value
             head.position[axis] = value * (bodySize - headSize)
         end
     end, function (element)
