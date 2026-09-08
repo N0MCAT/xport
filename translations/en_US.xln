@@ -24,4 +24,7 @@ demoworld.level6.description \: There is a room in between.
 menu.volume.sfx \: sfx
 menu.volume.music \: music
 
+menu.resume \: resume
+menu.quit \: quit
+
 menu.language \: English

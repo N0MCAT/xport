@@ -33,8 +33,23 @@ local function validateElement(element)
     element.sizing = element.sizing or {}
     element.sizing.width = element.sizing.width or Size.Fit
     element.sizing.height = element.sizing.height or Size.Fit
+    element.sizing.minWidth = Element.parseSize(element.sizing.minWidth) or nil
 
     element.padding = element.padding or {}
+    if #element.padding == 1 then
+        local pad = element.padding[1]
+        element.padding[1] = pad
+        element.padding[2] = pad
+        element.padding[3] = pad
+        element.padding[4] = pad
+    elseif #element.padding == 2 then
+        local horizontal, vertical = element.padding[1], element.padding[2]
+        element.padding[1] = horizontal
+        element.padding[2] = horizontal
+        element.padding[3] = vertical
+        element.padding[4] = vertical
+    end
+
     element.padding.left = Element.parseSize(element.padding[1]) or 0
     element.padding.right = Element.parseSize(element.padding[2]) or 0
     element.padding.up = Element.parseSize(element.padding[3]) or 0
@@ -65,6 +80,8 @@ local function validateElement(element)
     element.x = 0
     element.y = 0
 
+    element.itemType = "rectangle"
+
     -- element.id = element.id or nil
     element.children = {}
 end
@@ -76,35 +93,19 @@ function Element.test()
             height = Size.Fixed { amount = state.height },
         },
         align = { x = AlignX.Center, y = AlignY.Center },
-        color = { 255, 255, 255, 50 },
+        color = { 255, 255, 255, 240 },
         spacing = state.height * 0.1,
         id = "root"
     }, function(ctx)
-        Element.slider(ctx, {
-            sizing = {
-                width = Size.Fixed { amount = state.width * 0.7 },
-                height = Size.Fixed { amount = state.height * 0.05 },
-            },
-            data = state,
-            key = "musicVolume",
-            id = "musicSlider",
-            onChange = function(value)
-                Sounds.move:play(true)
-            end
-        })
-        Element.slider(ctx, {
-            sizing = {
-                width = Size.Fixed { amount = state.width * 0.1 },
-                height = Size.Fixed { amount = state.height * 0.5 },
-            },
-            snapping = #Locale.languages,
-            id = "localeSlider",
-            onChange = function(value)
-                local newLang = Locale.languages[value + 1]
-                Locale.changeLanguage(newLang)
-                return value
-            end
-        })
+        Element.new(ctx, {
+            color = { 0, 0, 0, 255 },
+            padding = { Size.Adapt { amount = 20 }, Size.Adapt { amount = 10 } }
+        }, function()
+            Element.text(ctx, {
+                text = "hi",
+                font = globals.hintFont
+            })
+        end)
     end)
     Element.initialize(state.rootElement)
 end
@@ -166,11 +167,33 @@ function Element.set(element, key, value)
     end
 end
 
+function Element.text(ctx, config)
+    local text = Element.new(ctx, config, nil, function(element)
+        element.font = element.font or globals.hintFont
+        element.text = element.text or "Lorem ipsum"
+
+        -- local longestWordWidth = 0
+        -- for _, word in ipairs(string.split(element.text, "%s")) do
+        --     local currentWordWidth = element.font:getWidth(word)
+        --     if currentWordWidth > longestWordWidth then
+        --         longestWordWidth = currentWordWidth
+        --     end
+        -- end
+
+        -- element.sizing.minWidth = longestWordWidth
+    end)
+    text.width = text.font:getWidth(text.text)
+    text.height = text.font:getHeight()
+
+    text.itemType = "text"
+    return text
+end
+
 function Element.slider(ctx, config)
     local autoLayout = config.layoutDir == nil
     -- Custom validation was moved to the bottom!
 
-    Element.new(ctx, config, function(ctx)
+    return Element.new(ctx, config, function(ctx)
         local parent = ctx.parent
 
         -- For sliders that don't directly modify external data,
@@ -554,12 +577,16 @@ end
 
 function Element.draw(element)
     love.graphics.setColor(element.color[1] / 255, element.color[2] / 255, element.color[3] / 255, element.color[4] / 255)
-    love.graphics.rectangle("fill", element.x, element.y, element.width, element.height)
-    love.graphics.setColor(1, 1, 1)
+    if element.itemType == "rectangle" then
+        love.graphics.rectangle("fill", element.x, element.y, element.width, element.height)
 
-    for _, child in ipairs(element.children) do
-        Element.draw(child)
+        for _, child in ipairs(element.children) do
+            Element.draw(child)
+        end
+    elseif element.itemType == "text" then
+        love.graphics.print(element.text, element.font, element.x, element.y)
     end
+    love.graphics.setColor(1, 1, 1)
 end
 
 function Element.saveElements(element)

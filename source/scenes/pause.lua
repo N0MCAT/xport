@@ -47,32 +47,47 @@ function PauseMenu.updateUI(self)
         id = "root"
     }, function(ctx)
         local resume = Element.new(ctx, {
-            sizing = {
-                width = Size.Adapt { amount = 250 },
-                height = Size.Adapt { amount = 50 },
-            },
+            -- sizing = {
+            --     width = Size.Adapt { amount = 250 },
+            --     height = Size.Adapt { amount = 50 },
+            -- },
+            padding = { Size.Adapt { amount = 20 }, Size.Adapt { amount = 10 } },
             color = { 255, 255, 255 },
             hoverColor = { 255, 193, 247 },
             hoverSound = Sounds.hoverUI,
             id = "resumeButton"
-        })
+        }, function()
+            Element.text(ctx, {
+                text = Locale.localizeText("menu.resume"),
+                color = { 0, 0, 0, 255 },
+                id = "resumeLabel"
+            })
+        end)
 
         if not self.resuming then
             if resume:isJustClicked() then
+
                 self.resuming = true
             end
         end
 
         local quit = Element.new(ctx, {
-            sizing = {
-                width = Size.Adapt { amount = 250 },
-                height = Size.Adapt { amount = 50 },
-            },
+            -- sizing = {
+            --     width = Size.Adapt { amount = 250 },
+            --     height = Size.Adapt { amount = 50 },
+            -- },
+            padding = { Size.Adapt { amount = 20 }, Size.Adapt { amount = 10 } },
             color = { 255, 255, 255 },
             hoverColor = { 255, 193, 247 },
             hoverSound = Sounds.hoverUI,
             id = "quitButton"
-        })
+        }, function()
+            Element.text(ctx, {
+                text = Locale.localizeText("menu.quit"),
+                color = { 0, 0, 0, 255 },
+                id = "quitLabel"
+            })
+        end)
 
         if not self.resuming then
             if quit:isJustClicked() then
@@ -83,34 +98,53 @@ function PauseMenu.updateUI(self)
             end
         end
 
-        Element.slider(ctx, {
-            sizing = {
-                width = Size.Width { amount = 0.7 },
-                height = Size.Adapt { amount = 36 },
-            },
-            data = state,
-            key = "musicVolume",
-            id = "musicSlider",
-            headHoverSound = Sounds.hoverUI,
-            onChange = function(value)
-                Sounds.move:play(true)
-            end
-        })
+        Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
+            local label = Element.text(ctx, {
+                text = Locale.localizeText("menu.volume.music"),
+                color = { 0, 0, 0, 255 },
+                id = "musicLabel"
+            })
+            Element.slider(ctx, {
+                sizing = {
+                    width = Size.Width { amount = 0.7 },
+                    height = Size.Fixed { amount = label:get("height") },
+                },
+                data = state,
+                key = "musicVolume",
+                id = "musicSlider",
+                headHoverSound = Sounds.hoverUI,
+                onChange = function(value)
+                    Sounds.move:play(true)
+                end
+            })
+        end)
 
-        Element.slider(ctx, {
-            sizing = {
-                width = Size.Width { amount = 0.7 },
-                height = Size.Adapt { amount = 36 },
-            },
-            data = state,
-            key = "sfxVolume",
-            id = "sfxSlider",
-            headHoverSound = Sounds.hoverUI,
-            onChange = function(value)
-                Sounds.move:play()
-            end
-        })
+        Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
+            local label = Element.text(ctx, {
+                text = Locale.localizeText("menu.volume.sfx"),
+                color = { 0, 0, 0, 255 },
+                id = "sfxLabel"
+            })
+            Element.slider(ctx, {
+                sizing = {
+                    width = Size.Width { amount = 0.7 },
+                    height = Size.Fixed { amount = label:get("height") },
+                },
+                data = state,
+                key = "sfxVolume",
+                id = "sfxSlider",
+                headHoverSound = Sounds.hoverUI,
+                onChange = function(value)
+                    Sounds.move:play()
+                end
+            })
+        end)
 
+        Element.text(ctx, {
+            text = Locale.localizeText("menu.language"),
+            color = { 0, 0, 0, 255 },
+            id = "languageLabel"
+        })
         Element.slider(ctx, {
             sizing = {
                 width = Size.Adapt { amount = 200 },
@@ -143,6 +177,7 @@ function PauseMenu.mousepressed(self, x, y, button, istouch, presses)
 end
 
 function PauseMenu.onResize(self)
+    self:updateUI()
     if self.scene.onResize then self.scene:onResize() end
     if self.canvas ~= nil then self.canvas:release() end
     self.canvas = love.graphics.newCanvas()
