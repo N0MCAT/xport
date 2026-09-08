@@ -122,13 +122,6 @@ function Element.hasChildHovered(element, exclusion)
     return false
 end
 
-function Element.isTopHovered(element)
-    if element.parent and element.parent:hasChildHovered(element) then
-        return false
-    end
-    return element:isHovered()
-end
-
 function Element.isHovered(element)
     if not element.hoverable then return false end
     if element.id then
@@ -144,12 +137,16 @@ function Element.isHovered(element)
 end
 
 function Element.isPressed(element)
-    return element:isTopHovered() and Mouse.isDown[1]
+    return element:isHovered() and Mouse.isDown[1]
 end
 
 function Element.isJustClicked(element)
-    return element:isTopHovered() and Mouse.justDown[1]
+    return element:isHovered() and Mouse.justDown[1]
 end
+
+-- function Element.isJustHovered(element)
+--     return element:isHovered() and not element:get("hovered")
+-- end
 
 function Element.get(element, key)
     if element.id then
@@ -208,6 +205,7 @@ function Element.slider(ctx, config)
                 },
                 color = parent.headColor,
                 hoverColor = parent.headHoverColor,
+                hoverSound = parent.headHoverSound,
                 id = parent.id .. "#head"
             })
 
@@ -274,6 +272,7 @@ end
 function Element.new(ctx, config, inner, validate)
     local self = {
         ctx = ctx,
+        parent = ctx.parent,
         inner = inner or function(_) end,
     }
 
@@ -307,13 +306,15 @@ function Element.parseSize(unit)
         elseif unit:is("Height") then
             return unit.amount * state.height
         end
+    elseif type(unit) == "function" then
+        return unit()
     else
         return unit -- Not a parseable unit! Ignore...
     end
 end
 
 function Element.canParseSize(unit)
-    return unit:isAny("Fixed", "Adapt", "Width", "Height") or (type(unit) == "number")
+    return unit:isAny("Fixed", "Adapt", "Width", "Height") or (type(unit) == "number") or (type(unit) == "function")
 end
 
 function Element.calculateFitSizes(element)
@@ -561,13 +562,6 @@ function Element.draw(element)
     end
 end
 
--- function Element.startAction(element)
---     if element.action then element.action() end
---     for _, child in ipairs(element.children) do
---         Element.startAction(child)
---     end
--- end
-
 function Element.saveElements(element)
     if element.id ~= nil then
         element.ctx.ids[element.id] = element
@@ -578,9 +572,21 @@ function Element.saveElements(element)
     end
 end
 
+-- function Element.preActions(element)
+--     element.hovered = element:isHovered()
+--     element.lastHovered = element.hovered and element:get("hovered")
+
+--     for _, child in ipairs(element.children) do
+--         Element.preActions(child)
+--     end
+-- end
+
 function Element.actions(element)
     if element:isHovered() then
         element.color = element.hoverColor
+        -- if element.hoverSound and not element.lastHovered then
+        --     element.hoverSound:play()
+        -- end
     end
 
     for _, child in ipairs(element.children) do
@@ -592,9 +598,9 @@ function Element.initialize(element)
     Element.calculateFitSizes(element)
     Element.calculateGrowSizes(element)
     Element.calculatePositions(element)
+
     Element.saveElements(element)
     Element.actions(element)
-    -- Element.startAction(element)
 end
 
 return Element

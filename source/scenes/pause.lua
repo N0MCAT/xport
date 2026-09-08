@@ -53,6 +53,7 @@ function PauseMenu.updateUI(self)
             },
             color = { 255, 255, 255 },
             hoverColor = { 255, 193, 247 },
+            hoverSound = Sounds.hoverUI,
             id = "resumeButton"
         })
 
@@ -69,6 +70,7 @@ function PauseMenu.updateUI(self)
             },
             color = { 255, 255, 255 },
             hoverColor = { 255, 193, 247 },
+            hoverSound = Sounds.hoverUI,
             id = "quitButton"
         })
 
@@ -89,6 +91,7 @@ function PauseMenu.updateUI(self)
             data = state,
             key = "musicVolume",
             id = "musicSlider",
+            headHoverSound = Sounds.hoverUI,
             onChange = function(value)
                 Sounds.move:play(true)
             end
@@ -102,6 +105,7 @@ function PauseMenu.updateUI(self)
             data = state,
             key = "sfxVolume",
             id = "sfxSlider",
+            headHoverSound = Sounds.hoverUI,
             onChange = function(value)
                 Sounds.move:play()
             end
@@ -112,10 +116,11 @@ function PauseMenu.updateUI(self)
                 width = Size.Adapt { amount = 200 },
                 height = Size.Adapt { amount = 42 },
             },
-            snapping = #Locale.languages,
-            id = "localeSlider",
             data = self.lang,
             key = "langIndex",
+            id = "localeSlider",
+            headHoverSound = Sounds.hoverUI,
+            snapping = #Locale.languages,
             onChange = function(value)
                 local newLang = Locale.languages[value + 1]
                 Locale.changeLanguage(newLang)
