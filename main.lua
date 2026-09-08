@@ -44,6 +44,8 @@ state = {
     width = 0,
     height = 0,
 
+    adaptUnits = 0,
+
     sfxVolume = 0.5,
     musicVolume = 0.5,
 
@@ -79,6 +81,7 @@ function updateGraphics()
     state.height = love.graphics.getHeight()
 
     if lastWidth ~= state.width or lastHeight ~= state.height then
+        state.adaptUnits = math.min(state.width, state.height) / 720 -- 720 is the default height... change this if that's untrue
         forceUpdateGraphics()
     end
 end
@@ -193,11 +196,7 @@ local pressTime = 0
 local repeatTime = 0
 
 function love.update(dt)
-    Animation.update(dt)
     Mouse.x, Mouse.y = love.mouse.getPosition()
-    for i, _ in ipairs(Mouse.justDown) do
-        Mouse.isDown[i] = love.mouse.isDown(i)
-    end
     updateGraphics()
 
     -- Element.test()
@@ -247,7 +246,6 @@ function love.draw()
     -- elseif state.mode == Mode.Editor then
     --     Interface.draw(state.interface)
     -- end
-    Animation.draw()
 
     -- Element.draw(state.rootElement)
 
@@ -302,6 +300,7 @@ function love.wheelmoved(x, y)
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
+    Mouse.x, Mouse.y = x, y
     if state.scene.mousemoved then
         state.scene:mousemoved(x, y, dx, dy, istouch)
     end
@@ -311,5 +310,16 @@ function love.mousemoved(x, y, dx, dy, istouch)
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
+    Mouse.isDown[button] = true
     Mouse.justDown[button] = true
+    if state.scene.mousepressed then
+        state.scene:mousepressed(x, y, button, istouch, presses)
+    end
+end
+
+function love.mousereleased(x, y, button, istouch, presses)
+    Mouse.isDown[button] = false
+    if state.scene.mousereleased then
+        state.scene:mousereleased(x, y, button, istouch, presses)
+    end
 end

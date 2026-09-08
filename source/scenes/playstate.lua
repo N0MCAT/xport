@@ -1,8 +1,10 @@
 if PlayState ~= nil then return PlayState end
 
 local love = require "love"
+require "source.scenes.pause"
 require "source.graphics.anim"
 require "source.play.level"
+require "source.data.locale"
 
 PlayState = {}
 
@@ -35,6 +37,8 @@ function PlayState.exitLevel(self)
     self.goalPlaying = false
     if #self.levelStack <= 1 then
         state.scene = Menu.create()
+        forceUpdateGraphics()
+        Music.play(Music.menu, 0.5)
         return true
     else
         self:popLevel()
@@ -54,9 +58,10 @@ function PlayState.keypressed(self, key)
     if self.goalPlaying then return end
     if key == "escape" or key == "backspace" then
         if (globals.entered_level_six ~= 6) then
-            self:exitLevel()
-            Animation.start(PlayState.fadeFromBlack(2))
-            Music.play(Music.menu, 0.2)
+            state.scene = PauseMenu.new(self)
+            -- self:exitLevel()
+            -- Animation.start(PlayState.fadeFromBlack(2))
+            -- Music.play(Music.menu, 0.2)
         else
             -- state.levelIndex = -6
             globals.entered_level_six = 6.66
@@ -110,6 +115,7 @@ function PlayState.reloadFonts(self, overrideFont)
 end
 
 function PlayState.update(self, dt)
+    Animation.update(dt)
     self:getLevel():update(dt)
 end
 
@@ -137,6 +143,7 @@ function PlayState.draw(self)
         local padding = self.cellSize / 2
         local header = level.number .. " - "
         local footer = ""
+
         if Locale.current == "sitelen_pona" then
             header = "󱤽" .. Locale.levelNumberSitelenPona(level.number) .. "󱤡 「 "
             footer = " 」"
@@ -149,14 +156,18 @@ function PlayState.draw(self)
         local padding = self.cellSize / 2
         local _, fontWrapped = globals.hintFont:getWrap(level.subtitle, state.width - padding)
         local fontHeight = globals.hintFont:getHeight()
+
+        -- all our homies hate printf. i think
+        -- love.graphics.printf(level.subtitle, globals.hintFont, 0, state.height - padding - fontHeight, state.width - padding, "center")
+
         for i, text in ipairs(fontWrapped) do
             local fontWidth = globals.hintFont:getWidth(text)
             love.graphics.print(text, globals.hintFont, (state.width - fontWidth) / 2,
                 state.height - padding - fontHeight * (#fontWrapped - i + 1))
         end
-        -- all our homies hate printf. i think
-        -- love.graphics.printf(level.subtitle, globals.hintFont, 0, state.height - padding - fontHeight, state.width - padding, "center")
     end
+
+    Animation.draw()
 end
 
 function PlayState.levelClearAnim(self, duration, goal)
@@ -187,8 +198,6 @@ function PlayState.levelEndAnim(self, duration)
         love.graphics.setColor(1, 1, 1)
     end, function()
         self:exitLevel()
-        forceUpdateGraphics()
-        Music.play(Music.menu, 0.5)
     end)
 end
 

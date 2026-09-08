@@ -254,6 +254,7 @@ local function noHover(menu)
 end
 
 function Menu.update(menu, dt)
+    Animation.update(dt)
     local mx, my = love.mouse.getPosition()
     -- for _, scrollBar in menu.scrollBars do
 
@@ -541,7 +542,9 @@ function Menu.draw(menu)
         else
             love.graphics.setColor(love.math.colorFromBytes(255, 255, 255))
         end
-        love.graphics.rectangle("fill", realX, realY + (1 - (scrollBar.value / ((scrollBar.scale or scrollBar.snapping or 2) - 1)))  * (realH - realW), realW, realW)
+        love.graphics.rectangle("fill", realX,
+            realY + (1 - (scrollBar.value / ((scrollBar.scale or scrollBar.snapping or 2) - 1))) * (realH - realW), realW,
+            realW)
 
         local font = globals.hintFont
         local transLabel = Locale.localizeText(scrollBar.label)
@@ -550,13 +553,15 @@ function Menu.draw(menu)
 
         -- love.graphics.setColor(0, 0, 0)
         -- love.graphics.print(transLabel, globals.hintFont,
-            -- realX - fontWidth / 2 + realW / 2 + fontWidth / 9, realY + realH + fontHeight / 2 + fontHeight / 9)
+        -- realX - fontWidth / 2 + realW / 2 + fontWidth / 9, realY + realH + fontHeight / 2 + fontHeight / 9)
 
         love.graphics.setColor(love.math.colorFromBytes(255, 255, 255))
         love.graphics.print(transLabel, font,
             realX - fontWidth / 2 + realW / 2 + realW / 6, realY + realH + fontHeight / 2)
     end
+
     love.graphics.setColor(1, 1, 1)
+    Animation.draw()
 end
 
 function Menu.rectScaleAnim(rect)

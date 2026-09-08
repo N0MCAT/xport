@@ -13,7 +13,7 @@ function enum(name, a)
 
     -- Parameters of things to compare to.
     local isAny = function(self, ...)
-        for _, id in ... do
+        for _, id in ipairs {...} do
             if is(self, id) then
                 return true
             end
@@ -53,6 +53,8 @@ function enum(name, a)
             for key, value in pairs(a) do result[key] = value end
             for key, value in pairs(config) do result[key] = value end
             result.is = is
+            result.isAny = isAny
+            result.isAnyOf = isAnyOf
             return result
         end
     end

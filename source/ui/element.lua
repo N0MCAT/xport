@@ -6,6 +6,9 @@ Element = {}
 Size = {
     Fit = {},
     Fixed = { amount = 0 },
+    Adapt = { amount = 0 },
+    Width = { amount = 0 },
+    Height = { amount = 0 },
     Grow = {},
 } enumerate(Size)
 
@@ -32,20 +35,20 @@ local function validateElement(element)
     element.sizing.height = element.sizing.height or Size.Fit
 
     element.padding = element.padding or {}
-    element.padding.left = element.padding[1] or 0
-    element.padding.right = element.padding[2] or 0
-    element.padding.up = element.padding[3] or 0
-    element.padding.down = element.padding[4] or 0
+    element.padding.left = Element.parseSize(element.padding[1]) or 0
+    element.padding.right = Element.parseSize(element.padding[2]) or 0
+    element.padding.up = Element.parseSize(element.padding[3]) or 0
+    element.padding.down = Element.parseSize(element.padding[4]) or 0
 
     element.align = element.align or {}
     element.align.x = element.align.x or AlignX.Left
     element.align.y = element.align.y or AlignY.Top
 
-    element.spacing = element.spacing or 0
+    element.spacing = Element.parseSize(element.spacing) or 0
 
     element.position = element.position or {}
-    element.position.x = element.position.x or 0
-    element.position.y = element.position.y or 0
+    element.position.x = Element.parseSize(element.position.x) or 0
+    element.position.y = Element.parseSize(element.position.y) or 0
 
     element.layoutDir = element.layoutDir or LayoutDir.LeftToRight
 
@@ -53,6 +56,8 @@ local function validateElement(element)
     element.color[4] = element.color[4] or 255
     element.hoverColor = element.hoverColor or element.color
     element.hoverColor[4] = element.hoverColor[4] or 255
+
+    if element.hoverable == nil then element.hoverable = element.color[4] >= 127 end
 
     -- absolute values
     element.width = 0
@@ -104,7 +109,28 @@ function Element.test()
     Element.initialize(state.rootElement)
 end
 
+function Element.hasChildHovered(element, exclusion)
+    if element.children and #element.children > 0 then
+        for _, child in ipairs(element.children) do
+            if child ~= exclusion and child:hasChildHovered(exclusion) then
+                return true
+            end
+        end
+    else
+        return element:isHovered()
+    end
+    return false
+end
+
+function Element.isTopHovered(element)
+    if element.parent and element.parent:hasChildHovered(element) then
+        return false
+    end
+    return element:isHovered()
+end
+
 function Element.isHovered(element)
+    if not element.hoverable then return false end
     if element.id then
         local savedElement = element.ctx.ids[element.id]
         if savedElement then
@@ -118,11 +144,11 @@ function Element.isHovered(element)
 end
 
 function Element.isPressed(element)
-    return element:isHovered() and Mouse.isDown[1]
+    return element:isTopHovered() and Mouse.isDown[1]
 end
 
 function Element.isJustClicked(element)
-    return element:isHovered() and Mouse.justDown[1]
+    return element:isTopHovered() and Mouse.justDown[1]
 end
 
 function Element.get(element, key)
@@ -170,7 +196,7 @@ function Element.slider(ctx, config)
 
             local isHorizontal = parent.layoutDir:is(LayoutDir.LeftToRight)
             local headSize = isHorizontal and pHeight or pWidth
-            parent.invert = isHorizontal and parent.invert or (not parent.invert)
+            if not isHorizontal then parent.invert = not parent.invert end
 
             local head = Element.new(ctx, {
                 sizing = {
@@ -222,17 +248,19 @@ function Element.slider(ctx, config)
             local value = (parent.data[parent.key] - parent.minValue) / (parent.maxValue - parent.minValue)
             value = parent.invert and 1 - value or parent.data[parent.key]
             head.position[axis] = value * (bodySize - headSize)
-            print(parent.data[parent.key])
         end
     end, function (element)
-        element.minValue = element.minValue or 0
-        element.maxValue = element.maxValue or ((element.snapping or 2) - 1)
         element.id = element.id or element.key
         element.key = element.key or "value"
+
+        element.minValue = element.minValue or 0
+        element.maxValue = element.maxValue or ((element.snapping or 2) - 1)
 
         element.color = element.color or { 43, 39, 81, 255 }
         element.headColor = element.headColor or { 255, 255, 255, 255 }
         element.headHoverColor = element.headHoverColor or { 255, 193, 247, 255 }
+
+        if element.hoverable == nil then element.hoverable = true end
     end)
 end
 
@@ -268,6 +296,26 @@ function Element.new(ctx, config, inner, validate)
     return self
 end
 
+function Element.parseSize(unit)
+    if type(unit) == "table" then
+        if unit:is("Fixed") then
+            return unit.amount
+        elseif unit:is("Adapt") then
+            return unit.amount * state.adaptUnits
+        elseif unit:is("Width") then
+            return unit.amount * state.width
+        elseif unit:is("Height") then
+            return unit.amount * state.height
+        end
+    else
+        return unit -- Not a parseable unit! Ignore...
+    end
+end
+
+function Element.canParseSize(unit)
+    return unit:isAny("Fixed", "Adapt", "Width", "Height") or (type(unit) == "number")
+end
+
 function Element.calculateFitSizes(element)
     for _, child in ipairs(element.children) do
         Element.calculateFitSizes(child)
@@ -276,12 +324,12 @@ function Element.calculateFitSizes(element)
     element.width = element.width + element.padding.left + element.padding.right
     element.height = element.height + element.padding.up + element.padding.down
 
-    if element.sizing.width:is("Fixed") then
-        element.width = element.width + element.sizing.width.amount
+    if Element.canParseSize(element.sizing.width) then
+        element.width = element.width + Element.parseSize(element.sizing.width)
     end
 
-    if element.sizing.height:is("Fixed") then
-        element.height = element.height + element.sizing.height.amount
+    if Element.canParseSize(element.sizing.height) then
+        element.height = element.height + Element.parseSize(element.sizing.height)
     end
 
     if element.sizing.width:is("Fit") then
