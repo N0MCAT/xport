@@ -30,6 +30,8 @@ LayoutDir = {
 } enumerate(LayoutDir)
 
 local function validateElement(element)
+    element.type = element.type or "generic"
+
     element.sizing = element.sizing or {}
     element.sizing.width = element.sizing.width or Size.Fit
     element.sizing.height = element.sizing.height or Size.Fit
@@ -73,6 +75,7 @@ local function validateElement(element)
     element.hoverColor[4] = element.hoverColor[4] or 255
 
     if element.hoverable == nil then element.hoverable = element.color[4] >= 127 end
+    if element.selectable == nil then element.selectable = false end
 
     -- absolute values
     element.width = 0
@@ -80,34 +83,10 @@ local function validateElement(element)
     element.x = 0
     element.y = 0
 
-    element.itemType = "rectangle"
+    element.itemType = element.itemType or "generic"
 
     -- element.id = element.id or nil
     element.children = {}
-end
-
-function Element.test()
-    state.rootElement = Element.new(state.ui, {
-        sizing = {
-            width = Size.Fixed { amount = state.width },
-            height = Size.Fixed { amount = state.height },
-        },
-        align = { x = AlignX.Center, y = AlignY.Center },
-        color = { 255, 255, 255, 240 },
-        spacing = state.height * 0.1,
-        id = "root"
-    }, function(ctx)
-        Element.new(ctx, {
-            color = { 0, 0, 0, 255 },
-            padding = { Size.Adapt { amount = 20 }, Size.Adapt { amount = 10 } }
-        }, function()
-            Element.text(ctx, {
-                text = "hi",
-                font = globals.hintFont
-            })
-        end)
-    end)
-    Element.initialize(state.rootElement)
 end
 
 function Element.hasChildHovered(element, exclusion)
@@ -121,6 +100,10 @@ function Element.hasChildHovered(element, exclusion)
         return element:isHovered()
     end
     return false
+end
+
+function Element.isSelected(element)
+    return element.ctx.selected and (element.id == element.ctx.selected.id)
 end
 
 function Element.isHovered(element)
@@ -141,8 +124,24 @@ function Element.isPressed(element)
     return element:isHovered() and Mouse.isDown[1]
 end
 
+function Element.isKeyed(element)
+    return element:isSelected() and Controls.isDown("accept")
+end
+
+function Element.isAccepted(element)
+    return element:isPressed() or element:isKeyed()
+end
+
 function Element.isJustClicked(element)
     return element:isHovered() and Mouse.justDown[1]
+end
+
+function Element.isJustKeyed(element)
+    return element:isSelected() and Controls.justDown("accept")
+end
+
+function Element.isJustAccepted(element)
+    return element:isJustClicked() or element:isJustKeyed()
 end
 
 -- function Element.isJustHovered(element)
@@ -229,15 +228,46 @@ function Element.slider(ctx, config)
                 color = parent.headColor,
                 hoverColor = parent.headHoverColor,
                 hoverSound = parent.headHoverSound,
+                selectable = parent.selectable,
                 id = parent.id .. "#head"
             })
 
+            parent.head = head
+            parent.selectable = false
             if head:isJustClicked() then
                 parent:set("sliderOffset", Mouse[axis] - head:get(axis))
                 parent:set("dragging", true)
             elseif parent:isJustClicked() then
                 parent:set("sliderOffset", headSize * 0.5)
                 parent:set("dragging", true)
+            end
+
+            if head:isSelected() and (Controls.isDown("accept") or Controls.isDown("shift")) then
+                local isInc, isDec = Controls.justDown("right") or Controls.justDown("up"),
+                    Controls.justDown("left") or Controls.justDown("down")
+
+                if isInc or isDec then
+                    local dir = isInc and 1 or -1
+                    local value = (parent.data[parent.key] - parent.minValue) / (parent.maxValue - parent.minValue)
+                    if parent.invert then value = 1 - value end
+
+                    if parent.snapping then
+                        value = math.floor((value + dir / parent.snapping) * (parent.snapping - 1) + 0.5)
+                        if parent.snapping == (parent.maxValue - parent.minValue) then
+                            value = value + parent.minValue
+                        else
+                            value = value / (parent.snapping - 1) * (parent.maxValue - parent.minValue) + parent.minValue
+                        end
+                    else
+                        value = (value + dir / headSize) * (parent.maxValue - parent.minValue) + parent.minValue
+                    end
+
+                    value = clamp(parent.minValue, value, parent.maxValue)
+
+                    local oldValue = parent.data[parent.key]
+                    parent.data[parent.key] = value
+                    if oldValue ~= value and parent.onChange then parent.onChange(value) end
+                end
             end
 
             if Mouse.isDown[1] and parent:get("dragging") then
@@ -273,6 +303,7 @@ function Element.slider(ctx, config)
     end, function (element)
         element.id = element.id or element.key
         element.key = element.key or "value"
+        element.itemType = "slider"
 
         element.minValue = element.minValue or 0
         element.maxValue = element.maxValue or ((element.snapping or 2) - 1)
@@ -289,6 +320,12 @@ function Element.makeContext()
     return {
         ids = {},
         parent = nil,
+
+        navigX = 0, navigY = 0,
+        navigation = nil,
+        selected = nil,
+
+        navigIndex = nil
     }
 end
 
@@ -577,7 +614,7 @@ end
 
 function Element.draw(element)
     love.graphics.setColor(element.color[1] / 255, element.color[2] / 255, element.color[3] / 255, element.color[4] / 255)
-    if element.itemType == "rectangle" then
+    if element.itemType == "generic" or element.itemType == "slider" then
         love.graphics.rectangle("fill", element.x, element.y, element.width, element.height)
 
         for _, child in ipairs(element.children) do
@@ -609,7 +646,7 @@ end
 -- end
 
 function Element.actions(element)
-    if element:isHovered() then
+    if element:isHovered() or element:isSelected() then
         element.color = element.hoverColor
         -- if element.hoverSound and not element.lastHovered then
         --     element.hoverSound:play()
@@ -621,6 +658,59 @@ function Element.actions(element)
     end
 end
 
+function Element.prepareNavigationTree(element)
+    element.ctx.navigation = {}
+    element.ctx.navigIndex = 1
+end
+
+function Element.blur(element)
+    element.ctx.selected = nil
+end
+
+-- Selection function for keyboard navigation.
+function Element.navigate(element, x, y)
+    local context = element.ctx
+    if not context.selected then
+        context.navigX = 1
+        context.navigY = 1
+        context.selected = context.navigation[context.navigY][context.navigX]
+    else
+        x, y = x or 0, y or 0
+        depthPrint(1, " pre:", context.navigX, context.navigY, context.navigation)
+        context.navigY = ((context.navigY + y - 1) % #context.navigation) + 1
+        context.navigX = context.navigX + x
+
+        local row = context.navigation[context.navigY]
+        if context.navigX > #row then
+            context.navigX = context.navigX - #row
+            return Element.navigate(element, 0, 1)
+        elseif context.navigX < 1 then
+            context.navigX = context.navigX + #row
+            return Element.navigate(element, 0, -1)
+        end
+
+        depthPrint(1, "post:", context.navigX, context.navigY, context.navigation)
+        context.selected = row[context.navigX]
+    end
+
+    return context.selected
+end
+
+function Element.buildNavigationTree(element)
+    local context = element.ctx
+    if element.selectable then
+        context.navigation[context.navigIndex] = context.navigation[context.navigIndex] or {}
+        table.insert(context.navigation[context.navigIndex], element)
+    end
+
+    for _, child in ipairs(element.children) do
+        if element.layoutDir == LayoutDir.TopToBottom and context.navigation[context.navigIndex] then
+            context.navigIndex = context.navigIndex + 1
+        end
+        Element.buildNavigationTree(child)
+    end
+end
+
 function Element.initialize(element)
     Element.calculateFitSizes(element)
     Element.calculateGrowSizes(element)
@@ -628,6 +718,9 @@ function Element.initialize(element)
 
     Element.saveElements(element)
     Element.actions(element)
+
+    Element.prepareNavigationTree(element)
+    Element.buildNavigationTree(element)
 end
 
 return Element

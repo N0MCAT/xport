@@ -186,14 +186,24 @@ function allWithPredicate(list, predicate)
 end
 
 -- borrowed from https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
-function dump(o, depth)
+function dump(o, depth, a1, a2)
+    a1 = a1 or {}
+    a2 = a2 or {}
+    local a3 = {}
+
     if depth == -1 then return '...' end
     if type(o) == 'table' then
+        if a1[o] then return '{ ... }' end
+        if a2[o] then return '{ ... }' end
+        a1[o] = true
+        a2[o] = true
+        a3[o] = true
+
         local s = '{ '
         local didsomething = false
         for k,v in pairs(o) do
             -- if type(k) ~= 'number' then k = dump(k) end
-            s = s .. '['..dump(k)..'] = ' .. dump(v, depth and (depth - 1) or nil) .. ', '
+            s = s .. '['..dump(k, nil, a2, a3)..'] = ' .. dump(v, depth and (depth - 1) or nil, a2, a3) .. ', '
             didsomething = true
         end
         return (didsomething and string.sub(s, 1, -3) or s) .. ' }'

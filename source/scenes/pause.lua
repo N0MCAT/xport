@@ -13,6 +13,7 @@ function PauseMenu.new(playstate)
         scene = playstate,
         context = Element.makeContext(),
         lang = { langIndex = Locale.ilanguages[Locale.current] - 1 },
+        dirty = 0,
         resuming = false,
         exitTimer = PauseMenu.EXIT_TIMER,
         canvas = nil,
@@ -21,20 +22,39 @@ function PauseMenu.new(playstate)
 
     bindPrototype(self, PauseMenu)
     self:onResize()
+    self:updateUI()
+    self.ui[1]:navigate()
     return self
 end
 
 function PauseMenu.keypressed(self, key)
     if not self.resuming then
         if key == "escape" or key == "backspace" then
-            self.resuming = true
+            -- if self.ui[1].ctx.selected then
+            --     self.ui[1]:blur()
+            -- else
+                self.resuming = true
+            -- end
+        elseif key == "tab" then
+            self.ui[1]:navigate((Keyboard.isDown.lshift or Keyboard.isDown.rshift) and -1 or 1, 0)
+        elseif not (Keyboard.isDown.lshift or Keyboard.isDown.rshift) and not (Keyboard.isDown.enter or Keyboard.isDown.space) then
+            if key == "w" or key == "up" then
+                self.ui[1]:navigate(0, -1)
+            elseif key == "a" or key == "left" then
+                self.ui[1]:navigate(-1, 0)
+            elseif key == "s" or key == "down" then
+                self.ui[1]:navigate(0, 1)
+            elseif key == "d" or key == "right" then
+                self.ui[1]:navigate(1, 0)
+            end
         end
+        self.dirty = 1
     elseif self.scene.keypressed then
         self.scene:keypressed(key)
     end
 end
 
-function PauseMenu.updateUI(self)
+function PauseMenu.updateUI(self, fromLocale)
     self.ui[1] = Element.new(self.context, {
         sizing = {
             width = Size.Fixed { amount = state.width },
@@ -53,6 +73,7 @@ function PauseMenu.updateUI(self)
             -- },
             padding = { Size.Adapt { amount = 20 }, Size.Adapt { amount = 10 } },
             color = { 255, 255, 255 },
+            selectable = true,
             hoverColor = { 255, 193, 247 },
             hoverSound = Sounds.hoverUI,
             id = "resumeButton"
@@ -65,8 +86,7 @@ function PauseMenu.updateUI(self)
         end)
 
         if not self.resuming then
-            if resume:isJustClicked() then
-
+            if resume:isJustAccepted() then
                 self.resuming = true
             end
         end
@@ -78,6 +98,7 @@ function PauseMenu.updateUI(self)
             -- },
             padding = { Size.Adapt { amount = 20 }, Size.Adapt { amount = 10 } },
             color = { 255, 255, 255 },
+            selectable = true,
             hoverColor = { 255, 193, 247 },
             hoverSound = Sounds.hoverUI,
             id = "quitButton"
@@ -90,7 +111,7 @@ function PauseMenu.updateUI(self)
         end)
 
         if not self.resuming then
-            if quit:isJustClicked() then
+            if quit:isJustAccepted() then
                 state.scene = self.scene
                 if self.scene.exitLevel then
                     self.scene:exitLevel()
@@ -112,6 +133,7 @@ function PauseMenu.updateUI(self)
                 data = state,
                 key = "musicVolume",
                 id = "musicSlider",
+                selectable = true,
                 headHoverSound = Sounds.hoverUI,
                 onChange = function(value)
                     Sounds.move:play(true)
@@ -133,6 +155,7 @@ function PauseMenu.updateUI(self)
                 data = state,
                 key = "sfxVolume",
                 id = "sfxSlider",
+                selectable = true,
                 headHoverSound = Sounds.hoverUI,
                 onChange = function(value)
                     Sounds.move:play()
@@ -153,11 +176,13 @@ function PauseMenu.updateUI(self)
             data = self.lang,
             key = "langIndex",
             id = "localeSlider",
+            selectable = true,
             headHoverSound = Sounds.hoverUI,
             snapping = #Locale.languages,
-            onChange = function(value)
+            onChange = fromLocale and function (_) end or function(value)
                 local newLang = Locale.languages[value + 1]
                 Locale.changeLanguage(newLang)
+                self.dirty = 3
                 return value
             end
         })
@@ -166,18 +191,19 @@ function PauseMenu.updateUI(self)
     for _, ui in ipairs(self.ui) do
         ui:initialize()
     end
+
+    resetJustDown()
 end
 
 function PauseMenu.mousemoved(self, x, y, dx, dy, istouch)
-    self:updateUI()
+    self.dirty = 1
 end
 
 function PauseMenu.mousepressed(self, x, y, button, istouch, presses)
-    self:updateUI()
+    self.dirty = 1
 end
 
 function PauseMenu.onResize(self)
-    self:updateUI()
     if self.scene.onResize then self.scene:onResize() end
     if self.canvas ~= nil then self.canvas:release() end
     self.canvas = love.graphics.newCanvas()
@@ -189,7 +215,11 @@ function PauseMenu.reloadFonts(self, overrideFont)
 end
 
 function PauseMenu.update(self, dt)
-    -- self:updateUI()
+    while self.dirty > 0 do
+        self.dirty = self.dirty - 1
+        self:updateUI()
+    end
+
     if self.resuming then
         self.exitTimer = self.exitTimer - dt
         if self.exitTimer <= 0 then

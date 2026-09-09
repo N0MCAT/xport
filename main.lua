@@ -34,6 +34,49 @@ Mouse = {
     isDown = {false, false}
 }
 
+Keyboard = {
+    justDown = {},
+    isDown = {},
+    presses = {}
+}
+
+-- TODO: Move to separate file, maybe rebindable?
+Controls = {
+    mappings = {
+        accept = { "return", "space" },
+        back = { "escape", "backspace" },
+        shift = { "lshift", "rshift" },
+        alt = { "lalt", "ralt" },
+        up = { "w", "up" },
+        down = { "s", "down" },
+        left = { "a", "left" },
+        right = { "d", "right" }
+    }
+}
+
+function Controls.isBlank(key, blank)
+    if Controls.mappings[key] then
+        for _, subkey in ipairs(Controls.mappings[key]) do
+            if blank[subkey] then return true end
+        end
+        return false
+    end
+    return blank[key]
+end
+
+function Controls.isDown(key) return Controls.isBlank(key, Keyboard.isDown) end
+function Controls.justDown(key) return Controls.isBlank(key, Keyboard.justDown) end
+function Controls.presses(key, blank)
+    if Controls.mappings[key] then
+        local presses = 0
+        for _, subkey in ipairs(Controls.mappings[key]) do
+            presses = presses + (Keyboard.presses[subkey] or 0)
+        end
+        return presses
+    end
+    return blank[key]
+end
+
 Mode = {
     Gameplay = {},
     Menu = {},
@@ -86,6 +129,17 @@ function updateGraphics()
     end
 end
 
+function resetJustDown()
+    for i, _ in ipairs(Mouse.justDown) do
+        Mouse.justDown[i] = false
+    end
+
+    for k, _ in pairs(Keyboard.justDown) do
+        Keyboard.justDown[k] = false
+        Keyboard.presses[k] = 0
+    end
+end
+
 function reloadFonts()
     -- local ponaAltFile = Locale.current == 'sitelen_pona' and globals.ponaFontFile2 or nil)
     local ponaAltFile = Locale.current == 'sitelen_pona' and globals.ponaFontFile or nil
@@ -96,12 +150,6 @@ function reloadFonts()
     if state.scene.reloadFonts then
         state.scene:reloadFonts(ponaAltFile)
     end
-
-    -- if state.mode == Mode.Gameplay then
-    --     Level.reloadFonts(state.level, ponaAltFile)
-    -- elseif state.mode == Mode.Menu then
-    --     Menu.reloadFonts(state.menu, ponaAltFile)
-    -- end
 end
 
 function forceUpdateGraphics()
@@ -161,28 +209,6 @@ function love.load()
     }
 
     Music.play(Music.menu)
-
-    -- state.rootElement = Element.new(ctx, {
-    --     color = { 255, 0, 0 },
-    --     padding = { 25, 25, 25, 25 },
-    --     spacing = 25
-    -- }, function(_)
-    --     Element.new(ctx, {
-    --         sizing = {
-    --             width = Size.Fixed { amount = love.graphics.getWidth() / 4 },
-    --             height = Size.Fixed { amount = love.graphics.getHeight() / 4 },
-    --         },
-    --         color = { 0, 255, 0 }
-    --     })
-    --     Element.new(ctx, {
-    --         sizing = {
-    --             width = Size.Fixed { amount = love.graphics.getWidth() / 7 },
-    --             height = Size.Fixed { amount = love.graphics.getHeight() / 7 },
-    --         },
-    --         color = { 0, 255, 0 }
-    --     })
-    -- end)
-
     state.ui = Element.makeContext()
     updateGraphics()
 end
@@ -197,9 +223,9 @@ local repeatTime = 0
 
 function love.update(dt)
     Mouse.x, Mouse.y = love.mouse.getPosition()
-    updateGraphics()
-
-    -- Element.test()
+    for i, _ in ipairs(Mouse.isDown) do
+        Mouse.isDown[i] = love.mouse.isDown(i)
+    end
 
     local currentKey = KEYS_PRESSED[#KEYS_PRESSED]
     if currentKey ~= nil then
@@ -214,21 +240,16 @@ function love.update(dt)
         end
     end
 
+    for k, _ in pairs(Keyboard.isDown) do
+        Keyboard.isDown[k] = love.keyboard.isDown(k)
+    end
+
+    updateGraphics()
     if state.scene.update then
         state.scene:update(dt)
     end
 
-    -- if state.mode == Mode.Gameplay then
-    --     Level.update(state.level, dt)
-    -- elseif state.mode == Mode.Menu then
-    --     Menu.update(state.menu, dt)
-    -- elseif state.mode == Mode.Editor then
-    --     Interface.update(state.interface, dt)
-    -- end
-
-    for i, _ in ipairs(Mouse.justDown) do
-        Mouse.justDown[i] = false
-    end
+    resetJustDown()
     Music.update(dt)
 end
 
@@ -269,6 +290,9 @@ function love.keypressed(key)
 end
 
 function pressedKey(key)
+    Keyboard.isDown[key] = true
+    Keyboard.justDown[key] = true
+    Keyboard.presses[key] = (Keyboard.presses[key] or 0) + 1
     if state.scene.keypressed then
         state.scene:keypressed(key)
     end
@@ -284,6 +308,7 @@ function love.keyreleased(key)
 end
 
 function keyClear(key, time)
+    Keyboard.isDown[key] = false
     pressTime = time
     repeatTime = 0
     local index = indexOf(KEYS_PRESSED, key)

@@ -60,7 +60,9 @@ function Locale.changeLanguage(language)
         Locale.current = language
         localizeCache = {}
         reloadFonts()
+        return true
     end
+    return false
 end
 
 function Locale.convertNumberToSitelenPona(number)
