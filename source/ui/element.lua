@@ -676,7 +676,6 @@ function Element.navigate(element, x, y)
         context.selected = context.navigation[context.navigY][context.navigX].id
     else
         x, y = x or 0, y or 0
-        depthPrint(1, " pre:", context.navigX, context.navigY, context.navigation)
         context.navigY = ((context.navigY + y - 1) % #context.navigation) + 1
         context.navigX = context.navigX + x
 
@@ -689,7 +688,6 @@ function Element.navigate(element, x, y)
             return Element.navigate(element, 0, -1)
         end
 
-        depthPrint(1, "post:", context.navigX, context.navigY, context.navigation)
         context.selected = row[context.navigX].id
     end
 

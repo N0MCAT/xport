@@ -230,8 +230,6 @@ function Levels.loadData()
             Levels.plain[areakey .. '/' .. levelID] = resultLevel
             Levels.areas[areakey].levels[levelID] = resultLevel
             Levels.areas[areakey].levels[#Levels.areas[areakey].levels + 1] = resultLevel
-
-            -- depthPrint(2, '[LEVELS] Result:', Levels.areas)
         end
     end
 end
