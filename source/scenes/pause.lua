@@ -5,7 +5,8 @@ require "source.graphics.anim"
 require "source.play.level"
 
 PauseMenu = {
-    EXIT_TIMER = 0.2
+    EXIT_TIMER = 0.2,
+    ENTER_TIMER = 0.1
 }
 
 function PauseMenu.new(playstate)
@@ -15,7 +16,7 @@ function PauseMenu.new(playstate)
         lang = { langIndex = Locale.ilanguages[Locale.current] - 1 },
         dirty = 0,
         resuming = false,
-        exitTimer = PauseMenu.EXIT_TIMER,
+        fadeTimer = 0,
         canvas = nil,
         ui = {}
     }
@@ -119,48 +120,60 @@ function PauseMenu.updateUI(self, fromLocale)
             end
         end
 
-        Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
-            local label = Element.text(ctx, {
-                text = Locale.localizeText("menu.volume.music"),
-                color = { 0, 0, 0, 255 },
-                id = "musicLabel"
-            })
-            Element.slider(ctx, {
-                sizing = {
-                    width = Size.Width { amount = 0.7 },
-                    height = Size.Fixed { amount = label:get("height") },
-                },
-                data = state,
-                key = "musicVolume",
-                id = "musicSlider",
-                selectable = true,
-                headHoverSound = Sounds.hoverUI,
-                onChange = function(value)
-                    Sounds.move:play(true)
-                end
-            })
-        end)
+        Element.new(self.context, {
+            sizing = {
+                width = Size.Fit,
+                height = Size.Fit,
+            },
+            align = { x = AlignX.Right, y = AlignY.Center },
+            color = { 0, 0, 0, 0 },
+            layoutDir = LayoutDir.TopToBottom,
+            spacing = Size.Adapt { amount = 10 },
+            id = "root"
+        }, function(ctx)
+            Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
+                local label = Element.text(ctx, {
+                    text = Locale.localizeText("menu.volume.music"),
+                    color = { 0, 0, 0, 255 },
+                    id = "musicLabel"
+                })
+                Element.slider(ctx, {
+                    sizing = {
+                        width = Size.Width { amount = 0.7 },
+                        height = Size.Fixed { amount = label:get("height") },
+                    },
+                    data = state,
+                    key = "musicVolume",
+                    id = "musicSlider",
+                    selectable = true,
+                    headHoverSound = Sounds.hoverUI,
+                    onChange = function(value)
+                        Sounds.move:play(true)
+                    end
+                })
+            end)
 
-        Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
-            local label = Element.text(ctx, {
-                text = Locale.localizeText("menu.volume.sfx"),
-                color = { 0, 0, 0, 255 },
-                id = "sfxLabel"
-            })
-            Element.slider(ctx, {
-                sizing = {
-                    width = Size.Width { amount = 0.7 },
-                    height = Size.Fixed { amount = label:get("height") },
-                },
-                data = state,
-                key = "sfxVolume",
-                id = "sfxSlider",
-                selectable = true,
-                headHoverSound = Sounds.hoverUI,
-                onChange = function(value)
-                    Sounds.move:play()
-                end
-            })
+            Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
+                local label = Element.text(ctx, {
+                    text = Locale.localizeText("menu.volume.sfx"),
+                    color = { 0, 0, 0, 255 },
+                    id = "sfxLabel"
+                })
+                Element.slider(ctx, {
+                    sizing = {
+                        width = Size.Width { amount = 0.7 },
+                        height = Size.Fixed { amount = label:get("height") },
+                    },
+                    data = state,
+                    key = "sfxVolume",
+                    id = "sfxSlider",
+                    selectable = true,
+                    headHoverSound = Sounds.hoverUI,
+                    onChange = function(value)
+                        Sounds.move:play()
+                    end
+                })
+            end)
         end)
 
         Element.text(ctx, {
@@ -221,9 +234,15 @@ function PauseMenu.update(self, dt)
     end
 
     if self.resuming then
-        self.exitTimer = self.exitTimer - dt
-        if self.exitTimer <= 0 then
+        self.fadeTimer = self.fadeTimer - (dt / PauseMenu.EXIT_TIMER)
+        if self.fadeTimer <= 0 then
             state.scene = self.scene
+        end
+    else
+        if self.fadeTimer > 1 then
+            self.fadeTimer = 1
+        elseif self.fadeTimer < 1 then
+            self.fadeTimer = self.fadeTimer + (dt / PauseMenu.ENTER_TIMER)
         end
     end
 end
@@ -238,7 +257,7 @@ function PauseMenu.draw(self)
     love.graphics.setCanvas()
     love.graphics.setBlendMode("alpha", "premultiplied")
 
-    local alpha = self.exitTimer / PauseMenu.EXIT_TIMER
+    local alpha = self.fadeTimer
     love.graphics.setColor(alpha, alpha, alpha, alpha)
     love.graphics.draw(self.canvas)
 

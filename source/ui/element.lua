@@ -103,7 +103,7 @@ function Element.hasChildHovered(element, exclusion)
 end
 
 function Element.isSelected(element)
-    return element.ctx.selected and (element.id == element.ctx.selected.id)
+    return element.ctx.selected and (element.id == element.ctx.selected)
 end
 
 function Element.isHovered(element)
@@ -673,7 +673,7 @@ function Element.navigate(element, x, y)
     if not context.selected then
         context.navigX = 1
         context.navigY = 1
-        context.selected = context.navigation[context.navigY][context.navigX]
+        context.selected = context.navigation[context.navigY][context.navigX].id
     else
         x, y = x or 0, y or 0
         depthPrint(1, " pre:", context.navigX, context.navigY, context.navigation)
@@ -690,7 +690,7 @@ function Element.navigate(element, x, y)
         end
 
         depthPrint(1, "post:", context.navigX, context.navigY, context.navigation)
-        context.selected = row[context.navigX]
+        context.selected = row[context.navigX].id
     end
 
     return context.selected
