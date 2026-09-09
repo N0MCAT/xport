@@ -144,10 +144,6 @@ function Element.isJustAccepted(element)
     return element:isJustClicked() or element:isJustKeyed()
 end
 
--- function Element.isJustHovered(element)
---     return element:isHovered() and not element:get("hovered")
--- end
-
 function Element.get(element, key)
     if element.id then
         local savedElement = element.ctx.ids[element.id]
@@ -636,23 +632,27 @@ function Element.saveElements(element)
     end
 end
 
--- function Element.preActions(element)
---     element.hovered = element:isHovered()
---     element.lastHovered = element.hovered and element:get("hovered")
+function Element.preActions(element)
+    element.wasHovered = element:get("wasHovered")
+    element.wasSelected = element:get("wasSelected")
 
---     for _, child in ipairs(element.children) do
---         Element.preActions(child)
---     end
--- end
+    for _, child in ipairs(element.children) do
+        Element.preActions(child)
+    end
+end
 
 function Element.actions(element)
-    if element:isHovered() or element:isSelected() then
+    local isHovered = element:isHovered()
+    local isSelected = element:isSelected()
+    if isHovered or isSelected then
         element.color = element.hoverColor
-        -- if element.hoverSound and not element.lastHovered then
-        --     element.hoverSound:play()
-        -- end
+        if element.hoverSound and ((isHovered and not element.wasHovered) or (isSelected and not element.wasSelected)) then
+            element.hoverSound:play()
+        end
     end
 
+    element.wasHovered = isHovered
+    element.wasSelected = isSelected
     for _, child in ipairs(element.children) do
         Element.actions(child)
     end
@@ -714,6 +714,7 @@ function Element.initialize(element)
     Element.calculateGrowSizes(element)
     Element.calculatePositions(element)
 
+    Element.preActions(element)
     Element.saveElements(element)
     Element.actions(element)
 
