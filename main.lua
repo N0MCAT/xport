@@ -147,13 +147,13 @@ function reloadFonts()
     globals.hintFont = love.graphics.newFont(ponaHintAltFile or globals.levelFontFile, math.min(state.width, state.height) * 0.05)
     -- globals.titleFont = love.graphics.newFont(globals.fontFile, state.cellSize * 0.5)
 
-    if state.scene.reloadFonts then
+    if state.scene and state.scene.reloadFonts then
         state.scene:reloadFonts(ponaAltFile)
     end
 end
 
 function forceUpdateGraphics()
-    if state.scene.onResize then
+    if state.scene and state.scene.onResize then
         state.scene:onResize()
     end
 
@@ -179,8 +179,9 @@ function love.load()
     -- debugPrint("[JSONEncoder] Test:", jsontest, '\n' .. jsonencode)
 
     -- love.filesystem.write('jsontest2.jsonc', jsonencode)
+    updateGraphics()
 
-    state.scene = Menu.create()
+    state.scene = Menu.new()
 
     globals.challengeLevels = { 11, 12, 13, 14, 15 }
 
@@ -210,7 +211,7 @@ function love.load()
 
     Music.play(Music.menu)
     state.ui = Element.makeContext()
-    updateGraphics()
+    forceUpdateGraphics()
 end
 
 KEYS_PRESSED = {}

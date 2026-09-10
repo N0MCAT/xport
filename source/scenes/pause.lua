@@ -55,7 +55,7 @@ function PauseMenu.keypressed(self, key)
     end
 end
 
-function PauseMenu.updateUI(self, fromLocale)
+function PauseMenu.updateUI(self)
     self.ui[1] = Element.new(self.context, {
         sizing = {
             width = Size.Fixed { amount = state.width },
@@ -192,7 +192,7 @@ function PauseMenu.updateUI(self, fromLocale)
             selectable = true,
             headHoverSound = Sounds.hoverUI,
             snapping = #Locale.languages,
-            onChange = fromLocale and function (_) end or function(value)
+            onChange = function(value)
                 local newLang = Locale.languages[value + 1]
                 Locale.changeLanguage(newLang)
                 self.dirty = 3
@@ -220,7 +220,7 @@ function PauseMenu.onResize(self)
     if self.scene.onResize then self.scene:onResize() end
     if self.canvas ~= nil then self.canvas:release() end
     self.canvas = love.graphics.newCanvas()
-    self:updateUI()
+    self.dirty = 4
 end
 
 function PauseMenu.reloadFonts(self, overrideFont)

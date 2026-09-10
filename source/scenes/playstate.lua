@@ -36,7 +36,7 @@ end
 function PlayState.exitLevel(self)
     self.goalPlaying = false
     if #self.levelStack <= 1 then
-        state.scene = Menu.create()
+        state.scene = Menu.new()
         forceUpdateGraphics()
         Animation.start(PlayState.fadeFromBlack(2))
         Music.play(Music.menu, 0.5)

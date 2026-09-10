@@ -245,7 +245,6 @@ function Element.slider(ctx, config)
                 if isInc or isDec then
                     local dir = isInc and 1 or -1
                     local value = (parent.data[parent.key] - parent.minValue) / (parent.maxValue - parent.minValue)
-                    if parent.invert then value = 1 - value end
 
                     if parent.snapping then
                         value = math.floor((value + dir / parent.snapping) * (parent.snapping - 1) + 0.5)
@@ -677,9 +676,9 @@ function Element.navigate(element, x, y)
     else
         x, y = x or 0, y or 0
         context.navigY = ((context.navigY + y - 1) % #context.navigation) + 1
-        context.navigX = context.navigX + x
-
         local row = context.navigation[context.navigY]
+
+        context.navigX = clamp(0, context.navigX, #row) + x
         if context.navigX > #row then
             context.navigX = context.navigX - #row
             return Element.navigate(element, 0, 1)
