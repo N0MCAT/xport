@@ -282,6 +282,7 @@ end
 -- Used in save/migration functions.
 function Cell.makeEditor(x, y, type, region, value)
     local result = Cell.makeData(x, y, type, region, value)
+    result.animTime = 0
 
     bindPrototype(result, Cell)
     return result
