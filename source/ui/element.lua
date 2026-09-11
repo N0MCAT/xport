@@ -678,16 +678,18 @@ function Element.navigate(element, x, y)
         context.navigY = ((context.navigY + y - 1) % #context.navigation) + 1
         local row = context.navigation[context.navigY]
 
-        context.navigX = clamp(0, context.navigX, #row) + x
-        if context.navigX > #row then
-            context.navigX = context.navigX - #row
-            return Element.navigate(element, 0, 1)
-        elseif context.navigX < 1 then
-            context.navigX = context.navigX + #row
-            return Element.navigate(element, 0, -1)
+        if x ~= 0 then
+            context.navigX = clamp(1, context.navigX, #row) + x
+            if context.navigX > #row then
+                context.navigX = context.navigX - #row
+                return Element.navigate(element, 0, 1)
+            elseif context.navigX < 1 then
+                context.navigX = context.navigX + #row
+                return Element.navigate(element, 0, -1)
+            end
         end
 
-        context.selected = row[context.navigX].id
+        context.selected = row[clamp(1, context.navigX, #row)].id
     end
 
     return context.selected
