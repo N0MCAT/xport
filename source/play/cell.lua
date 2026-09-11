@@ -282,7 +282,7 @@ function Cell.makeData(x, y, type, region, value)
     return result
 end
 
--- Used in save/migration functions.
+-- Used for the editor.
 function Cell.makeEditor(x, y, type, region, value)
     local result = Cell.makeData(x, y, type, region, value)
     result.animTime = 0
