@@ -10,9 +10,9 @@ require "source.play.level"
 
 require "source.scenes.menu"
 require "source.scenes.playstate"
-require "source.graphics.palette"
+require "source.scenes.interface"
 
-require "source.ui.interface"
+require "source.graphics.palette"
 require "source.ui.element"
 
 --[[
@@ -258,19 +258,7 @@ function love.draw()
     -- does this not have deltatime?
     -- japi: yeah it's kinda crazy
 
-    if state.scene.draw then
-        state.scene:draw()
-    end
-    -- if state.mode == Mode.Gameplay then
-    --     Level.draw(state.level)
-    -- elseif state.mode == Mode.Menu then
-    --     Menu.draw(state.menu)
-    -- elseif state.mode == Mode.Editor then
-    --     Interface.draw(state.interface)
-    -- end
-
-    -- Element.draw(state.rootElement)
-
+    if state.scene.draw then state.scene:draw() end
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), globals.hintFont, 10, state.height - 25, 0, 0.5)
 end
 
@@ -284,7 +272,6 @@ function love.keypressed(key)
        state.fullscreen = not state.fullscreen
        love.window.setFullscreen(state.fullscreen)
     elseif key == "e" then
-        -- state.mode = Mode.Editor
         state.scene = Interface.new()
         state.musicVolume = 0.0
     end

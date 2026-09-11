@@ -11,11 +11,12 @@ local ESCAPES = {
     ["\'"] = "\'",
 }
 
-function JSONParser.new(source)
+function JSONParser.new(source, replacement)
     return {
         source = source,
         byte = 1,
         error = "",
+        replacement = replacement or {}
     }
 end
 
@@ -103,12 +104,12 @@ function JSONParser.expectCharacter(parser, expect)
     end
 end
 
-function JSONParser.parse(source)
+function JSONParser.parse(source, replacement)
     if type(source) ~= "string" then
         return '[did not pass a string to the parser]', false
     end
 
-    local parser = JSONParser.new(source)
+    local parser = JSONParser.new(source, replacement)
     local success, value = JSONParser.parseValue(parser)
     if success == false then
         value = parser.error
@@ -182,6 +183,8 @@ function JSONParser.parseAlphabeticLiteral(parser, start)
         return true, true
     elseif s == "false" then
         return true, false
+    elseif parser.replacement[s] then
+        return true, parser.replacement[s]
     end
 
     JSONParser.error(parser, "invalid alphabetic literal `" .. s .. "`")

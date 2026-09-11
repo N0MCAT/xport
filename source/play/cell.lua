@@ -17,6 +17,9 @@ Cell = orderedEnum({
 })
 ICell = invert(Cell)
 
+-- This means EditorCell.
+ECell = invert(Cell, "Cell.")
+
 function Cell.new(x, y, id, type, region, timer)
     local result = {
         x = x,
@@ -233,7 +236,7 @@ function Cell.drawTimer(x, y, scale, value, color, layers)
     )
 end
 
-function Cell.drawTimerLine(x1, y1, scale, x2, y2)
+function Cell.drawTimerLine(x1, y1, x2, y2, scale)
     love.graphics.setColor(1, 1, 1, 0.5)
     love.graphics.setLineWidth(Cell.lineWidth(scale, 5))
     love.graphics.line(x1, y1, x2, y2)

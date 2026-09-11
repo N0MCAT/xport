@@ -89,6 +89,17 @@ function bindPrototype(object, prototype)
     setmetatable(object, mt)
 end
 
+-- Inverts keys into values and values into keys.
+function invert(t1, prefix)
+    local t2 = {}
+    prefix = prefix or ''
+    for k, v in pairs(t1) do
+        t2[v] = prefix .. k
+    end
+    -- debugPrint('[INVERT] FROM', t1, 'TO', t2)
+    return t2
+end
+
 -- BASIC UTIL FUNCTIONS
 
 function pointInRect(x, y, rx, ry, rw, rh)
@@ -113,15 +124,6 @@ function append(t1, t2)
     for _, i in ipairs(t2) do
         table.insert(t1, i)
     end
-end
-
-function invert(t1)
-    local t2 = {}
-    for k, v in pairs(t1) do
-        t2[v] = k
-    end
-    -- debugPrint('[INVERT] FROM', t1, 'TO', t2)
-    return t2
 end
 
 function lerp(from, to, i)

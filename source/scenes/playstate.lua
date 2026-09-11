@@ -33,12 +33,17 @@ function PlayState.popLevel(self)
 end
 
 -- @return backToMenu
-function PlayState.exitLevel(self)
+function PlayState.exitLevel(self, doAnim)
+    if doAnim == nil then doAnim = true end
     self.goalPlaying = false
     if #self.levelStack <= 1 then
         state.scene = Menu.new()
         forceUpdateGraphics()
-        Animation.start(PlayState.fadeFromBlack(2))
+
+        if doAnim then
+            Animation.start(PlayState.fadeFromBlack(2))
+        end
+
         Music.play(Music.menu, 0.5)
         return true
     else
@@ -60,11 +65,7 @@ function PlayState.keypressed(self, key)
     if key == "escape" or key == "backspace" then
         if (globals.entered_level_six ~= 6) then
             state.scene = PauseMenu.new(self)
-            -- self:exitLevel()
-            -- Animation.start(PlayState.fadeFromBlack(2))
-            -- Music.play(Music.menu, 0.2)
         else
-            -- state.levelIndex = -6
             globals.entered_level_six = 6.66
             self:setLevel(Level.fromData(Levels.areas.man.lobby))
             Animation.start(PlayState.fadeFromBlack(1))
@@ -198,7 +199,7 @@ function PlayState.levelEndAnim(self, duration)
         drawRotatedRectangle("fill", state.width / 2, state.height / 2, scale, scale, 0)
         love.graphics.setColor(1, 1, 1)
     end, function()
-        self:exitLevel()
+        self:exitLevel(false)
     end)
 end
 
