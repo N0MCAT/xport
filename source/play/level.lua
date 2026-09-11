@@ -103,6 +103,16 @@ function Level.fromData(levelData)
         levelData.palette, levelData.musicID, levelData.number, levelData.title, levelData.subtitle)
 end
 
+function Level.editorFromData(levelData)
+    local cells = {}
+    for i, cell in ipairs(levelData.cells) do
+        cells[i] = Cell.bare(cell.x, cell.y, i, Cell[cell.type], cell.region, cell.val)
+    end
+
+    return Level.new(levelData.id, levelData.area, levelData.width, levelData.height, cells,
+        levelData.palette, levelData.musicID, levelData.number, levelData.title, levelData.subtitle)
+end
+
 function Level.update(level, dt)
     for _, cell in ipairs(level.cells) do
         if cell.animTime < 1 then
