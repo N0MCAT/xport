@@ -1,6 +1,6 @@
 {
-  "title": "5 - demoworld.level5.title",
-  "subtitle": "demoworld.level5.description",
+  "title": "5 - $demoworld.level5.title",
+  "subtitle": "$demoworld.level5.description",
   "width": 9,
   "height": 7,
   "palette": "demoworld/a_colors",

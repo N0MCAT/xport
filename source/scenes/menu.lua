@@ -101,7 +101,7 @@ function Menu.updateUI(self)
                 align = { x = AlignX.Center, y = AlignY.Center },
             }, function(ctx)
                 local label = Element.text(ctx, {
-                    text = Locale.localizeText("menu.volume.music"),
+                    text = Locale.localizeBit("menu.volume.music"),
                     color = { 0, 0, 0, 255 },
                     id = "musicLabel"
                 })
@@ -202,7 +202,7 @@ function Menu.updateUI(self)
                 align = { x = AlignX.Center, y = AlignY.Center },
             }, function(ctx)
                 local label = Element.text(ctx, {
-                    text = Locale.localizeText("menu.volume.sfx"),
+                    text = Locale.localizeBit("menu.volume.sfx"),
                     color = { 0, 0, 0, 255 },
                     id = "sfxLabel"
                 })
@@ -224,7 +224,7 @@ function Menu.updateUI(self)
         end)
 
         Element.text(ctx, {
-            text = Locale.localizeText("menu.language"),
+            text = Locale.localizeBit("menu.language"),
             color = { 0, 0, 0, 255 },
             id = "languageLabel"
         })

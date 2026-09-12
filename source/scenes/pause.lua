@@ -80,7 +80,7 @@ function PauseMenu.updateUI(self)
             id = "resumeButton"
         }, function()
             Element.text(ctx, {
-                text = Locale.localizeText("menu.resume"),
+                text = Locale.localizeBit("menu.resume"),
                 color = { 0, 0, 0, 255 },
                 id = "resumeLabel"
             })
@@ -105,7 +105,7 @@ function PauseMenu.updateUI(self)
             id = "quitButton"
         }, function()
             Element.text(ctx, {
-                text = Locale.localizeText("menu.quit"),
+                text = Locale.localizeBit(self.scene.config.quitText),
                 color = { 0, 0, 0, 255 },
                 id = "quitLabel"
             })
@@ -133,7 +133,7 @@ function PauseMenu.updateUI(self)
         }, function(ctx)
             Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
                 local label = Element.text(ctx, {
-                    text = Locale.localizeText("menu.volume.music"),
+                    text = Locale.localizeBit("menu.volume.music"),
                     color = { 0, 0, 0, 255 },
                     id = "musicLabel"
                 })
@@ -155,7 +155,7 @@ function PauseMenu.updateUI(self)
 
             Element.new(ctx, { color = { 0, 0, 0, 0 }, spacing = Size.Adapt { amount = 10 } }, function(ctx)
                 local label = Element.text(ctx, {
-                    text = Locale.localizeText("menu.volume.sfx"),
+                    text = Locale.localizeBit("menu.volume.sfx"),
                     color = { 0, 0, 0, 255 },
                     id = "sfxLabel"
                 })
@@ -177,7 +177,7 @@ function PauseMenu.updateUI(self)
         end)
 
         Element.text(ctx, {
-            text = Locale.localizeText("menu.language"),
+            text = Locale.localizeBit("menu.language"),
             color = { 0, 0, 0, 255 },
             id = "languageLabel"
         })

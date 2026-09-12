@@ -251,7 +251,8 @@ function Element.slider(ctx, config)
                         if parent.snapping == (parent.maxValue - parent.minValue) then
                             value = value + parent.minValue
                         else
-                            value = value / (parent.snapping - 1) * (parent.maxValue - parent.minValue) + parent.minValue
+                            value = value / (parent.snapping - 1) * (parent.maxValue - parent.minValue) + parent
+                                .minValue
                         end
                     else
                         value = (value + dir / headSize) * (parent.maxValue - parent.minValue) + parent.minValue
@@ -295,7 +296,7 @@ function Element.slider(ctx, config)
             value = parent.invert and 1 - value or value
             head.position[axis] = value * (bodySize - headSize)
         end
-    end, function (element)
+    end, function(element)
         element.id = element.id or element.key
         element.key = element.key or "value"
         element.itemType = "slider"

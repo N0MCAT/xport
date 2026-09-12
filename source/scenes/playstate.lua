@@ -8,13 +8,18 @@ require "source.data.locale"
 
 PlayState = {}
 
-function PlayState.new(level)
+function PlayState.new(level, config)
     local self = {
         levelStack = {},
         cellSize = 0,
         goalPlaying = false,
+        config = config or {},
         layers = {}
     }
+
+    self.config.isEditor = not not self.config.isEditor
+    self.config.quitText = self.config.quitText or 'menu.quit'
+    -- self.config.quitCallback = self.config.quitCallback or nil
 
     bindPrototype(self, PlayState)
     self:addLevel(level)
@@ -37,14 +42,17 @@ function PlayState.exitLevel(self, doAnim)
     if doAnim == nil then doAnim = true end
     self.goalPlaying = false
     if #self.levelStack <= 1 then
-        state.scene = Menu.new()
-        forceUpdateGraphics()
+        if self.config.quitCallback then self.config.quitCallback(self) end
+        if not self.config.isEditor then
+            state.scene = Menu.new()
+            forceUpdateGraphics()
 
-        if doAnim then
-            Animation.start(PlayState.fadeFromBlack(2))
+            if doAnim then
+                Animation.start(PlayState.fadeFromBlack(2))
+            end
+
+            Music.play(Music.menu, 0.5)
         end
-
-        Music.play(Music.menu, 0.5)
         return true
     else
         self:popLevel()

@@ -4,7 +4,10 @@ local love = require "love"
 Interface = {}
 
 function Interface.new()
-    local interface = {
+    local self = {
+        level = {},
+        playstate = nil, -- Used when playtesting the level.
+
         zoom = 100,
         zoomVelocity = 0,
         zoomSensitivity = 100,
@@ -19,12 +22,11 @@ function Interface.new()
 
         levelWidth = 7,
         levelHeight = 5,
-        cells = {},
         debug = {}
     }
 
-    bindPrototype(interface, Interface)
-    return interface
+    bindPrototype(self, Interface)
+    return self
 end
 
 function Interface.update(interface, dt)

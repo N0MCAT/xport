@@ -37,19 +37,43 @@ function Locale.loadMappings()
     Locale.ilanguages = invert(Locale.languages)
 end
 
+function Locale.localizeBit(bit)
+    return Locale.mappings[Locale.current][bit] or Locale.mappings[Locale.fallback][bit] or bit
+end
+
 -- We should make sure to clear this when switching languages
 -- or when it starts to cache too much
 local localizeCache = {}
 function Locale.localizeText(text)
     if localizeCache[text] then return localizeCache[text] end
 
-    for key, string in pairs(Locale.mappings[Locale.current]) do
-        text = string.gsub(text, key, string)
+    local didSomething = true
+    while didSomething do
+        didSomething = false
+        for d, transkey in string.gmatch(text, "($)(%S+%s-)") do
+            local localized = Locale.mappings[Locale.current][transkey] or Locale.mappings[Locale.fallback][transkey]
+            if localized then
+                text = string.gsub(text, d .. transkey, localized)
+                didSomething = true
+            end
+        end
+
+        for d, transkey in string.gmatch(text, "($)({%S+})") do
+            local localized = Locale.mappings[Locale.current][transkey] or Locale.mappings[Locale.fallback][transkey]
+            if localized then
+                text = string.gsub(text, d .. transkey, localized)
+                didSomething = true
+            end
+        end
     end
 
-    for key, string in pairs(Locale.mappings[Locale.fallback]) do
-        text = string.gsub(text, key, string)
-    end
+    -- for key, string in pairs(Locale.mappings[Locale.current]) do
+    --     text = string.gsub(text, key, string)
+    -- end
+
+    -- for key, string in pairs(Locale.mappings[Locale.fallback]) do
+    --     text = string.gsub(text, key, string)
+    -- end
 
     localizeCache[text] = text
     return text
